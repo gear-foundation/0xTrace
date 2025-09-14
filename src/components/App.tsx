@@ -2,8 +2,7 @@ import AcUnitIcon from "@mui/icons-material/AcUnit";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { createTheme } from "@mui/material/styles";
-import type { AppKitNetwork } from "@reown/appkit/networks";
-import { mainnet } from "@reown/appkit/networks";
+import { type AppKitNetwork, arbitrum, avalanche, base, bsc, mainnet } from "@reown/appkit/networks";
 import { createAppKit } from "@reown/appkit/react";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -39,7 +38,7 @@ const NAVIGATION: Navigation = [
 const queryClient = new QueryClient();
 
 const projectId = import.meta.env.VITE_REOWN_PROJECT_ID as string;
-const networks = [mainnet] as [AppKitNetwork, ...AppKitNetwork[]];
+const networks = [mainnet, bsc, base, arbitrum, avalanche] as [AppKitNetwork, ...AppKitNetwork[]];
 const wagmiAdapter = new WagmiAdapter({ projectId, networks });
 
 createAppKit({
