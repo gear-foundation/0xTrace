@@ -38,7 +38,8 @@ const NAVIGATION: Navigation = [
 const queryClient = new QueryClient();
 
 const projectId = import.meta.env.VITE_REOWN_PROJECT_ID as string;
-const networks = [mainnet, bsc, base, arbitrum, avalanche] as [AppKitNetwork, ...AppKitNetwork[]];
+const defaultNetwork = mainnet;
+const networks = [defaultNetwork, bsc, base, arbitrum, avalanche] as [AppKitNetwork, ...AppKitNetwork[]];
 const wagmiAdapter = new WagmiAdapter({ projectId, networks });
 
 createAppKit({
@@ -47,7 +48,7 @@ createAppKit({
     "--w3m-z-index": THEME.zIndex.modal,
   },
   networks,
-  defaultNetwork: mainnet,
+  defaultNetwork,
   metadata: {
     name: "FROSTWallet",
     description: "Yet another multi-sig wallet",
