@@ -23,7 +23,8 @@
     "react": "latest",
     "react-dom": "latest",
     "viem": "latest",
-    "wagmi": "latest"
+    "wagmi": "^2.19.5",
+    "@wagmi/core": "^2.22.1"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
