@@ -13,6 +13,7 @@
   "dependencies": {
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
+    "@gear-js/api": "^0.44.2",
     "@mui/icons-material": "latest",
     "@mui/material": "latest",
     "@noble/curves": "^1.9.1",

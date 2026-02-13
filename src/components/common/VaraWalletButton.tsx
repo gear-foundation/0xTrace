@@ -179,12 +179,14 @@ function AccountListView({
 function ConnectedView({
   account,
   walletName,
+  balance,
   onCopyAddress,
   onChangeWallet,
   onDisconnect,
 }: {
   account: VaraAccount;
   walletName: string;
+  balance: string | null;
   onCopyAddress: () => void;
   onChangeWallet: () => void;
   onDisconnect: () => void;
@@ -228,6 +230,17 @@ function ConnectedView({
           <ContentCopyIcon fontSize="small" />
         </IconButton>
       </Box>
+      {balance && (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 0.5 }}>
+          <VaraIcon />
+          <Typography variant="body2" sx={{ color: "#fff", fontWeight: 600 }}>
+            {balance}
+          </Typography>
+          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)" }}>
+            VARA
+          </Typography>
+        </Box>
+      )}
       <Divider sx={{ borderColor: "rgba(255,255,255,0.12)" }} />
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Chip
@@ -248,7 +261,7 @@ function ConnectedView({
 type ModalView = "wallets" | "accounts" | "connected";
 
 export default function VaraWalletButton() {
-  const { wallets, account, isConnected, connectWallet, selectAccount, disconnect } = useVaraAccount();
+  const { wallets, account, balance, isConnected, connectWallet, selectAccount, disconnect } = useVaraAccount();
   const alert = useAlert();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<ModalView>("wallets");
@@ -327,6 +340,11 @@ export default function VaraWalletButton() {
           }}
         >
           {account?.name || truncateAddress(account?.address ?? "")}
+          {balance && (
+            <Typography component="span" variant="caption" sx={{ ml: 0.5, opacity: 0.7 }}>
+              {balance} VARA
+            </Typography>
+          )}
         </Button>
       )}
       <Dialog
@@ -365,6 +383,7 @@ export default function VaraWalletButton() {
             <ConnectedView
               account={account}
               walletName={wallets.find((w) => w.id === account.source)?.name ?? account.source}
+              balance={balance}
               onCopyAddress={() => handleCopyAddress(account.address)}
               onChangeWallet={() => setView("wallets")}
               onDisconnect={handleDisconnect}

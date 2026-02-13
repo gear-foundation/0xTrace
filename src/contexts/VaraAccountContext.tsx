@@ -1,4 +1,5 @@
-import { createContext, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { GearApi } from "@gear-js/api";
+import { createContext, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type VaraAccount = {
   address: string;
@@ -17,6 +18,7 @@ export type DetectedWallet = {
 type VaraAccountContextType = {
   wallets: DetectedWallet[];
   account: VaraAccount | null;
+  balance: string | null;
   isConnected: boolean;
   isReady: boolean;
   connectWallet: (walletId: string) => Promise<VaraAccount[]>;
@@ -26,6 +28,8 @@ type VaraAccountContextType = {
 
 const STORAGE_WALLET_KEY = "vara-wallet-id";
 const STORAGE_ACCOUNT_KEY = "vara-account-address";
+const VARA_RPC = "wss://rpc.vara.network";
+const VARA_DECIMALS = 12;
 
 const KNOWN_WALLETS: Record<string, string> = {
   "polkadot-js": "Polkadot JS",
@@ -37,6 +41,7 @@ const KNOWN_WALLETS: Record<string, string> = {
 export const VaraAccountContext = createContext<VaraAccountContextType>({
   wallets: [],
   account: null,
+  balance: null,
   isConnected: false,
   isReady: false,
   connectWallet: async () => [],
@@ -53,10 +58,20 @@ function getInjectedWeb3(): Record<
   );
 }
 
+function formatBalance(raw: string, decimals: number): string {
+  const padded = raw.padStart(decimals + 1, "0");
+  const intPart = padded.slice(0, padded.length - decimals) || "0";
+  const fracPart = padded.slice(padded.length - decimals, padded.length - decimals + 2);
+  return `${intPart}.${fracPart}`;
+}
+
 export function VaraAccountProvider({ children }: { children: ReactNode }) {
   const [wallets, setWallets] = useState<DetectedWallet[]>([]);
   const [account, setAccount] = useState<VaraAccount | null>(null);
+  const [balance, setBalance] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const apiRef = useRef<GearApi | null>(null);
+  const unsubRef = useRef<(() => void) | null>(null);
 
   const detectWallets = useCallback(() => {
     const injected = getInjectedWeb3();
@@ -104,6 +119,11 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
 
   const disconnect = useCallback(() => {
     setAccount(null);
+    setBalance(null);
+    if (unsubRef.current) {
+      unsubRef.current();
+      unsubRef.current = null;
+    }
     setWallets((prev) => prev.map((w) => ({ ...w, isConnected: false, accounts: [] })));
     localStorage.removeItem(STORAGE_WALLET_KEY);
     localStorage.removeItem(STORAGE_ACCOUNT_KEY);
@@ -133,9 +153,60 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
     init();
   }, [connectWallet, detectWallets]);
 
+  useEffect(() => {
+    if (!account) {
+      setBalance(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchBalance = async () => {
+      try {
+        if (!apiRef.current) {
+          apiRef.current = await GearApi.create({ providerAddress: VARA_RPC });
+        }
+        const api = apiRef.current;
+
+        if (unsubRef.current) {
+          unsubRef.current();
+          unsubRef.current = null;
+        }
+
+        const unsub = await api.query.system.account(account.address, ({ data }) => {
+          if (!cancelled) {
+            setBalance(formatBalance(data.free.toString(), VARA_DECIMALS));
+          }
+        });
+        unsubRef.current = unsub as unknown as () => void;
+      } catch {
+        if (!cancelled) setBalance(null);
+      }
+    };
+
+    fetchBalance();
+
+    return () => {
+      cancelled = true;
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
+    };
+  }, [account]);
+
+  useEffect(() => {
+    return () => {
+      if (apiRef.current) {
+        apiRef.current.disconnect();
+        apiRef.current = null;
+      }
+    };
+  }, []);
+
   const value = useMemo(
-    () => ({ wallets, account, isConnected: !!account, isReady, connectWallet, selectAccount, disconnect }),
-    [wallets, account, isReady, connectWallet, selectAccount, disconnect],
+    () => ({ wallets, account, balance, isConnected: !!account, isReady, connectWallet, selectAccount, disconnect }),
+    [wallets, account, balance, isReady, connectWallet, selectAccount, disconnect],
   );
 
   return <VaraAccountContext.Provider value={value}>{children}</VaraAccountContext.Provider>;
