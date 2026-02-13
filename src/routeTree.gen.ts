@@ -35,9 +35,9 @@ const Layout404Route = Layout404RouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof LayoutIndexRoute
   '/404': typeof Layout404Route
   '/orders': typeof LayoutOrdersRoute
-  '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesByTo {
   '/404': typeof Layout404Route
@@ -53,7 +53,7 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/404' | '/orders' | '/'
+  fullPaths: '/' | '/404' | '/orders'
   fileRoutesByTo: FileRoutesByTo
   to: '/404' | '/orders' | '/'
   id: '__root__' | '/_layout' | '/_layout/404' | '/_layout/orders' | '/_layout/'
@@ -68,7 +68,7 @@ declare module '@tanstack/react-router' {
     '/_layout': {
       id: '/_layout'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof LayoutRouteRouteImport
       parentRoute: typeof rootRouteImport
     }

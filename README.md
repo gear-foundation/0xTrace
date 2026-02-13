@@ -1,8 +1,8 @@
-### frost-wallet-frontend
+### stealth-wallet-frontend
 
-[![Build Status](https://github.com/StackOverflowExcept1on/frost-wallet-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/StackOverflowExcept1on/frost-wallet-frontend/actions/workflows/ci.yml)
+[![Build Status](https://github.com/StackOverflowExcept1on/stealth-wallet-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/StackOverflowExcept1on/stealth-wallet-frontend/actions/workflows/ci.yml)
 
-Yet another multi-sig wallet
+Yet another ERC-5564 wallet
 
 ### Installing
 
