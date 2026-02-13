@@ -1,8 +1,11 @@
-import { useMediaQuery } from "@mui/material";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
 import SvgIcon from "@mui/material/SvgIcon";
-import { AppKitButton, useAppKit, useAppKitAccount } from "@reown/appkit/react";
+import Typography from "@mui/material/Typography";
+import { useAppKit } from "@reown/appkit/react";
+import { formatUnits } from "viem";
+import { useAccount, useBalance } from "wagmi";
 import CustomThemeSwitcher from "./CustomThemeSwitcher";
 import VaraWalletButton from "./VaraWalletButton";
 
@@ -18,10 +21,18 @@ function EthIcon() {
   );
 }
 
+function truncateAddress(address: string, chars = 4): string {
+  return `${address.slice(0, chars + 2)}...${address.slice(-chars)}`;
+}
+
 export default function CustomToolbarActions() {
   const { open } = useAppKit();
-  const { isConnected } = useAppKitAccount();
-  const isWide = useMediaQuery("(min-width:400px)");
+  const { isConnected, address } = useAccount();
+  const { data: balanceData, isLoading: isBalanceLoading } = useBalance({ address });
+
+  const formattedBalance = balanceData
+    ? Number.parseFloat(formatUnits(balanceData.value, balanceData.decimals)).toFixed(3)
+    : null;
 
   return (
     <Stack spacing={0.5} direction="row" alignItems="center">
@@ -40,7 +51,27 @@ export default function CustomToolbarActions() {
           Connect
         </Button>
       )}
-      {isConnected && <AppKitButton balance={isWide ? "show" : "hide"} charsEnd={4} />}
+      {isConnected && address && (
+        <Button
+          variant="outlined"
+          onClick={() => open()}
+          startIcon={<EthIcon />}
+          sx={{
+            textTransform: "none",
+            borderColor: "rgba(255,255,255,0.25)",
+            color: "inherit",
+            "&:hover": { borderColor: "#627EEA", bgcolor: "rgba(98,126,234,0.08)" },
+          }}
+        >
+          {truncateAddress(address)}
+          {isBalanceLoading && <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />}
+          {formattedBalance && (
+            <Typography component="span" variant="caption" sx={{ ml: 0.5, mt: "2px", opacity: 0.7, lineHeight: 1 }}>
+              {formattedBalance} {balanceData?.symbol}
+            </Typography>
+          )}
+        </Button>
+      )}
       <CustomThemeSwitcher />
     </Stack>
   );
