@@ -20,6 +20,7 @@ import SvgIcon from "@mui/material/SvgIcon";
 import Typography from "@mui/material/Typography";
 import { useCallback, useState } from "react";
 import type { DetectedWallet, VaraAccount } from "@/contexts/VaraAccountContext";
+import { useAlert } from "@/hooks/useAlert";
 import { useVaraAccount } from "@/hooks/useVaraAccount";
 
 function VaraIcon() {
@@ -248,10 +249,10 @@ type ModalView = "wallets" | "accounts" | "connected";
 
 export default function VaraWalletButton() {
   const { wallets, account, isConnected, connectWallet, selectAccount, disconnect } = useVaraAccount();
+  const alert = useAlert();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<ModalView>("wallets");
   const [selectedWallet, setSelectedWallet] = useState<DetectedWallet | null>(null);
-  const [copied, setCopied] = useState(false);
 
   const handleOpen = () => {
     setView(isConnected ? "connected" : "wallets");
@@ -261,7 +262,6 @@ export default function VaraWalletButton() {
 
   const handleClose = useCallback(() => {
     setOpen(false);
-    setCopied(false);
   }, []);
 
   const handleSelectWallet = useCallback(
@@ -283,11 +283,13 @@ export default function VaraWalletButton() {
     [selectAccount, handleClose],
   );
 
-  const handleCopyAddress = useCallback((address: string) => {
-    navigator.clipboard.writeText(address);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, []);
+  const handleCopyAddress = useCallback(
+    (address: string) => {
+      navigator.clipboard.writeText(address);
+      alert.success("Copied!");
+    },
+    [alert],
+  );
 
   const handleDisconnect = useCallback(() => {
     disconnect();
@@ -367,11 +369,6 @@ export default function VaraWalletButton() {
               onChangeWallet={() => setView("wallets")}
               onDisconnect={handleDisconnect}
             />
-          )}
-          {copied && (
-            <Typography variant="caption" color="success.main" sx={{ display: "block", textAlign: "center", mt: 1 }}>
-              Copied!
-            </Typography>
           )}
         </DialogContent>
       </Dialog>
