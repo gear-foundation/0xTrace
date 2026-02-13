@@ -19,6 +19,7 @@ type VaraAccountContextType = {
   wallets: DetectedWallet[];
   account: VaraAccount | null;
   balance: string | null;
+  tokenSymbol: string;
   isConnected: boolean;
   isReady: boolean;
   connectWallet: (walletId: string) => Promise<VaraAccount[]>;
@@ -28,7 +29,7 @@ type VaraAccountContextType = {
 
 const STORAGE_WALLET_KEY = "vara-wallet-id";
 const STORAGE_ACCOUNT_KEY = "vara-account-address";
-const VARA_RPC = "wss://rpc.vara.network";
+const VARA_RPC = "wss://testnet.vara.network";
 const VARA_DECIMALS = 12;
 
 const KNOWN_WALLETS: Record<string, string> = {
@@ -42,6 +43,7 @@ export const VaraAccountContext = createContext<VaraAccountContextType>({
   wallets: [],
   account: null,
   balance: null,
+  tokenSymbol: "VARA",
   isConnected: false,
   isReady: false,
   connectWallet: async () => [],
@@ -69,6 +71,7 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
   const [wallets, setWallets] = useState<DetectedWallet[]>([]);
   const [account, setAccount] = useState<VaraAccount | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
+  const [tokenSymbol, setTokenSymbol] = useState("VARA");
   const [isReady, setIsReady] = useState(false);
   const apiRef = useRef<GearApi | null>(null);
   const unsubRef = useRef<(() => void) | null>(null);
@@ -168,6 +171,11 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
         }
         const api = apiRef.current;
 
+        const symbols = api.registry.chainTokens;
+        const chainDecimals = api.registry.chainDecimals;
+        if (symbols[0] && !cancelled) setTokenSymbol(symbols[0]);
+        const decimals = chainDecimals[0] ?? VARA_DECIMALS;
+
         if (unsubRef.current) {
           unsubRef.current();
           unsubRef.current = null;
@@ -175,7 +183,7 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
 
         const unsub = await api.query.system.account(account.address, ({ data }) => {
           if (!cancelled) {
-            setBalance(formatBalance(data.free.toString(), VARA_DECIMALS));
+            setBalance(formatBalance(data.free.toString(), decimals));
           }
         });
         unsubRef.current = unsub as unknown as () => void;
@@ -205,8 +213,18 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ wallets, account, balance, isConnected: !!account, isReady, connectWallet, selectAccount, disconnect }),
-    [wallets, account, balance, isReady, connectWallet, selectAccount, disconnect],
+    () => ({
+      wallets,
+      account,
+      balance,
+      tokenSymbol,
+      isConnected: !!account,
+      isReady,
+      connectWallet,
+      selectAccount,
+      disconnect,
+    }),
+    [wallets, account, balance, tokenSymbol, isReady, connectWallet, selectAccount, disconnect],
   );
 
   return <VaraAccountContext.Provider value={value}>{children}</VaraAccountContext.Provider>;
