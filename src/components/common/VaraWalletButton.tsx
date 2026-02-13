@@ -6,6 +6,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
+import CircularProgress from "@mui/material/CircularProgress";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -180,6 +181,7 @@ function ConnectedView({
   account,
   walletName,
   balance,
+  tokenSymbol,
   onCopyAddress,
   onChangeWallet,
   onDisconnect,
@@ -187,6 +189,7 @@ function ConnectedView({
   account: VaraAccount;
   walletName: string;
   balance: string | null;
+  tokenSymbol: string;
   onCopyAddress: () => void;
   onChangeWallet: () => void;
   onDisconnect: () => void;
@@ -233,11 +236,11 @@ function ConnectedView({
       {balance && (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 0.5 }}>
           <VaraIcon />
-          <Typography variant="body2" sx={{ color: "#fff", fontWeight: 600 }}>
+          <Typography variant="body2" sx={{ color: "#fff", fontWeight: 600, lineHeight: 1 }}>
             {balance}
           </Typography>
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)" }}>
-            VARA
+          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)", lineHeight: 1 }}>
+            {tokenSymbol}
           </Typography>
         </Box>
       )}
@@ -261,7 +264,8 @@ function ConnectedView({
 type ModalView = "wallets" | "accounts" | "connected";
 
 export default function VaraWalletButton() {
-  const { wallets, account, balance, isConnected, connectWallet, selectAccount, disconnect } = useVaraAccount();
+  const { wallets, account, balance, tokenSymbol, isConnected, connectWallet, selectAccount, disconnect } =
+    useVaraAccount();
   const alert = useAlert();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<ModalView>("wallets");
@@ -340,9 +344,10 @@ export default function VaraWalletButton() {
           }}
         >
           {account?.name || truncateAddress(account?.address ?? "")}
+          {!balance && <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />}
           {balance && (
-            <Typography component="span" variant="caption" sx={{ ml: 0.5, opacity: 0.7 }}>
-              {balance} VARA
+            <Typography component="span" variant="caption" sx={{ ml: 0.5, mt: "2px", opacity: 0.7, lineHeight: 1 }}>
+              {balance} {tokenSymbol}
             </Typography>
           )}
         </Button>
@@ -384,6 +389,7 @@ export default function VaraWalletButton() {
               account={account}
               walletName={wallets.find((w) => w.id === account.source)?.name ?? account.source}
               balance={balance}
+              tokenSymbol={tokenSymbol}
               onCopyAddress={() => handleCopyAddress(account.address)}
               onChangeWallet={() => setView("wallets")}
               onDisconnect={handleDisconnect}
