@@ -55,9 +55,7 @@ function getInjectedWeb3(): Record<
   string,
   { enable: (origin: string) => Promise<{ accounts: { get: () => Promise<{ address: string; name?: string }[]> } }> }
 > {
-  return (
-    ((window as Record<string, unknown>).injectedWeb3 as typeof getInjectedWeb3 extends () => infer R ? R : never) ?? {}
-  );
+  return ((window as unknown as Record<string, unknown>).injectedWeb3 as ReturnType<typeof getInjectedWeb3>) ?? {};
 }
 
 function formatBalance(raw: string, decimals: number): string {
