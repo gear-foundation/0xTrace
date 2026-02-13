@@ -1,5 +1,4 @@
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import SecurityIcon from "@mui/icons-material/Security";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { createTheme } from "@mui/material/styles";
 import { type AppKitNetwork, arbitrum, avalanche, base, bsc, hoodi, mainnet } from "@reown/appkit/networks";
@@ -21,8 +20,8 @@ const THEME = createTheme({
 });
 
 const BRANDING = {
-  title: "Wallet",
-  logo: <SecurityIcon color="primary" />,
+  title: "0xTrace",
+  logo: <img src="/logo.png" alt="0xTrace" style={{ height: 32 }} />,
 };
 
 const NAVIGATION: Navigation = [
@@ -52,10 +51,10 @@ createAppKit({
   networks,
   defaultNetwork,
   metadata: {
-    name: "Stealth Wallet",
+    name: "0xTrace",
     description: "Yet another ERC-5564 wallet",
     url: window.location.origin,
-    icons: [`${window.location.origin}/light.svg`, `${window.location.origin}/dark.svg`],
+    icons: [`${window.location.origin}/logo.png`],
   },
   features: {
     email: false,
