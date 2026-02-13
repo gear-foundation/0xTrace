@@ -10,6 +10,7 @@ import { Outlet } from "@tanstack/react-router";
 import type { Navigation } from "@toolpad/core/AppProvider";
 import { TanStackRouterAppProvider } from "@toolpad/core/tanstack-router";
 import { WagmiProvider } from "wagmi";
+import { VaraAccountProvider } from "@/contexts/VaraAccountContext";
 
 const THEME = createTheme({
   cssVariables: {
@@ -67,9 +68,11 @@ export default function App() {
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <TanStackRouterAppProvider theme={THEME} branding={BRANDING} navigation={NAVIGATION}>
-          <Outlet />
-        </TanStackRouterAppProvider>
+        <VaraAccountProvider>
+          <TanStackRouterAppProvider theme={THEME} branding={BRANDING} navigation={NAVIGATION}>
+            <Outlet />
+          </TanStackRouterAppProvider>
+        </VaraAccountProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
