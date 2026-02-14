@@ -48,6 +48,9 @@ pub mod announcer {
             offset: u32,
             limit: u32,
         ) -> sails_rs::client::PendingCall<io::Announcements, Self::Env>;
+        fn announcements_len(
+            &self,
+        ) -> sails_rs::client::PendingCall<io::AnnouncementsLen, Self::Env>;
     }
     pub struct AnnouncerImpl;
     impl<E: sails_rs::client::GearEnv> Announcer for sails_rs::client::Service<AnnouncerImpl, E> {
@@ -65,12 +68,18 @@ pub mod announcer {
         ) -> sails_rs::client::PendingCall<io::Announcements, Self::Env> {
             self.pending_call((offset, limit))
         }
+        fn announcements_len(
+            &self,
+        ) -> sails_rs::client::PendingCall<io::AnnouncementsLen, Self::Env> {
+            self.pending_call(())
+        }
     }
 
     pub mod io {
         use super::*;
         sails_rs::io_struct_impl!(Announce (announcement: super::Announcement) -> ());
         sails_rs::io_struct_impl!(Announcements (offset: u32, limit: u32) -> Vec<super::Announcement>);
+        sails_rs::io_struct_impl!(AnnouncementsLen () -> u32);
     }
 
     #[cfg(not(target_arch = "wasm32"))]

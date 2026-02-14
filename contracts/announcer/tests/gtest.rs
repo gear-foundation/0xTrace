@@ -1,10 +1,10 @@
 use announcer_client::{Announcement, AnnouncerClient, AnnouncerClientCtors, announcer::*};
-use sails_rs::{H160, client::*, gtest::*};
+use sails_rs::{H160, client::*, gtest::*, hex};
 
 const ACTOR_ID: u64 = 42;
 
 #[tokio::test]
-async fn do_something_works() {
+async fn test_announcer() {
     let system = System::new();
     system.init_logger_with_default_filter("gwasm=debug,gtest=info,sails_rs=debug");
     system.mint_to(ACTOR_ID, 100_000_000_000_000);
@@ -23,30 +23,40 @@ async fn do_something_works() {
     let announcement1 = Announcement {
         stealth_address: H160::random(),
         caller: H160::random(),
-        ephemeral_pub_key: vec![1; 33],
-        metadata: vec![2],
+        ephemeral_pub_key: hex::decode(
+            "031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+        )
+        .unwrap(),
+        metadata: vec![0],
     };
     announcer_service_client
         .announce(announcement1.clone())
         .await
         .unwrap();
 
+    let announcements_len = announcer_service_client.announcements_len().await.unwrap();
     let announcements = announcer_service_client.announcements(0, 10).await.unwrap();
+    assert_eq!(announcements_len, 1);
     assert_eq!(announcements.len(), 1);
     assert_eq!(announcements[0], announcement1);
 
     let announcement2 = Announcement {
         stealth_address: H160::random(),
         caller: H160::random(),
-        ephemeral_pub_key: vec![3; 33],
-        metadata: vec![4],
+        ephemeral_pub_key: hex::decode(
+            "031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+        )
+        .unwrap(),
+        metadata: vec![0],
     };
     announcer_service_client
         .announce(announcement2.clone())
         .await
         .unwrap();
 
+    let announcements_len = announcer_service_client.announcements_len().await.unwrap();
     let announcements = announcer_service_client.announcements(1, 10).await.unwrap();
+    assert_eq!(announcements_len, 2);
     assert_eq!(announcements.len(), 1);
     assert_eq!(announcements[0], announcement2);
 }

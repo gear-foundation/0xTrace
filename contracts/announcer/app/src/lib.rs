@@ -1,5 +1,9 @@
 #![no_std]
 
+use k256::{
+    AffinePoint, EncodedPoint,
+    elliptic_curve::{group::prime::PrimeCurveAffine, sec1::FromEncodedPoint},
+};
 use sails_rs::{H160, cell::RefCell, prelude::*};
 
 #[derive(Clone, Debug, PartialEq, Encode, Decode, TypeInfo)]
@@ -14,14 +18,22 @@ pub struct Announcement {
 
 impl Announcement {
     pub fn validate(&self) {
+        let ephemeral_pub_key_buf_result: Result<[u8; 33], _> =
+            self.ephemeral_pub_key[..33].try_into();
+        let ephemeral_pub_key_buf =
+            ephemeral_pub_key_buf_result.expect("ephemeral_pub_key must be 33 bytes long");
+        let encoded_point = EncodedPoint::from_bytes(ephemeral_pub_key_buf)
+            .expect("ephemeral_pub_key is not valid encoded point");
+        match Option::<AffinePoint>::from(AffinePoint::from_encoded_point(&encoded_point)) {
+            Some(point) => {
+                if point.is_identity().into() {
+                    panic!("ephemeral_pub_key cannot be identity point");
+                }
+            }
+            None => panic!("ephemeral_pub_key is not valid point"),
+        }
         if self.metadata.is_empty() {
             panic!("metadata cannot be empty");
-        }
-        if self.ephemeral_pub_key.is_empty() {
-            panic!("ephemeral_pub_key cannot be empty");
-        }
-        if self.ephemeral_pub_key.len() != 33 {
-            panic!("ephemeral_pub_key has invalid length");
         }
     }
 }
@@ -30,8 +42,8 @@ pub struct AnnouncerData {
     announcements: Vec<Announcement>,
 }
 
-impl AnnouncerData {
-    pub fn new() -> Self {
+impl Default for AnnouncerData {
+    fn default() -> Self {
         Self {
             announcements: Vec::with_capacity(8192),
         }
@@ -87,6 +99,11 @@ impl AnnouncerService<'_> {
             .cloned()
             .collect()
     }
+
+    #[export]
+    pub fn announcements_len(&self) -> u32 {
+        self.data.borrow().announcements.len() as u32
+    }
 }
 
 pub struct AnnouncerProgram {
@@ -95,9 +112,10 @@ pub struct AnnouncerProgram {
 
 #[program]
 impl AnnouncerProgram {
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            announcer_data: RefCell::new(AnnouncerData::new()),
+            announcer_data: RefCell::new(AnnouncerData::default()),
         }
     }
 

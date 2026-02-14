@@ -12,6 +12,7 @@ constructor {
 service Announcer {
   Announce : (announcement: Announcement) -> null;
   query Announcements : (offset: u32, limit: u32) -> vec Announcement;
+  query AnnouncementsLen : () -> u32;
 
   events {
     Announcement: Announcement;

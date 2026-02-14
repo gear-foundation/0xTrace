@@ -12,3 +12,4 @@ categories.workspace = true
 
 [dependencies]
 sails-rs.workspace = true
+k256.workspace = true
