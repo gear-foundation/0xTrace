@@ -1,7 +1,5 @@
 ## The **announcer** program
 
-[![Build Status](https://github.com/gear-tech/announcer/workflows/CI/badge.svg)](https://github.com/gear-tech/announcer/actions)
-
 Program **announcer** for [⚙️ Gear Protocol](https://github.com/gear-tech/gear) written in [⛵ Sails](https://github.com/gear-tech/sails) framework.
 
 The program workspace includes the following packages:
