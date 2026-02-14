@@ -55,10 +55,10 @@ export default function AboutPage() {
       </Typography>
 
       <Typography variant="body2" color="text.secondary">
-        The math behind it (ECDH + key blinding) ensures that even if someone knows your meta-address, they cannot figure
-        out which stealth addresses belong to you. Only your private view key can detect your payments, and only your
-        private spend key can move the funds. No backend, no middlemen — everything runs through smart contracts and your
-        browser.
+        The math behind it (ECDH + key blinding) ensures that even if someone knows your meta-address, they cannot
+        figure out which stealth addresses belong to you. Only your private view key can detect your payments, and only
+        your private spend key can move the funds. No backend, no middlemen — everything runs through smart contracts
+        and your browser.
       </Typography>
 
       <Paper
@@ -103,7 +103,8 @@ export default function AboutPage() {
       <Typography variant="body2" color="text.secondary">
         Publishing payment announcements on Ethereum is expensive. 0xTrace uses Vara Network as a cheap storage layer —
         the Announcer and Registry contracts live on Vara, while actual transfers happen on Ethereum or any EVM chain.
-        You connect two wallets and get the best of both worlds: low fees for data, full EVM compatibility for transfers.
+        You connect two wallets and get the best of both worlds: low fees for data, full EVM compatibility for
+        transfers.
       </Typography>
 
       <Divider />
