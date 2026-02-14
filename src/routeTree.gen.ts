@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteRouteImport } from './routes/_layout/route'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutOrdersRouteImport } from './routes/_layout/orders'
+import { Route as LayoutAboutRouteImport } from './routes/_layout/about'
 import { Route as Layout404RouteImport } from './routes/_layout/404'
 
 const LayoutRouteRoute = LayoutRouteRouteImport.update({
@@ -28,6 +29,11 @@ const LayoutOrdersRoute = LayoutOrdersRouteImport.update({
   path: '/orders',
   getParentRoute: () => LayoutRouteRoute,
 } as any)
+const LayoutAboutRoute = LayoutAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => LayoutRouteRoute,
+} as any)
 const Layout404Route = Layout404RouteImport.update({
   id: '/404',
   path: '/404',
@@ -37,10 +43,12 @@ const Layout404Route = Layout404RouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/404': typeof Layout404Route
+  '/about': typeof LayoutAboutRoute
   '/orders': typeof LayoutOrdersRoute
 }
 export interface FileRoutesByTo {
   '/404': typeof Layout404Route
+  '/about': typeof LayoutAboutRoute
   '/orders': typeof LayoutOrdersRoute
   '/': typeof LayoutIndexRoute
 }
@@ -48,15 +56,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteRouteWithChildren
   '/_layout/404': typeof Layout404Route
+  '/_layout/about': typeof LayoutAboutRoute
   '/_layout/orders': typeof LayoutOrdersRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/404' | '/orders'
+  fullPaths: '/' | '/404' | '/about' | '/orders'
   fileRoutesByTo: FileRoutesByTo
-  to: '/404' | '/orders' | '/'
-  id: '__root__' | '/_layout' | '/_layout/404' | '/_layout/orders' | '/_layout/'
+  to: '/404' | '/about' | '/orders' | '/'
+  id:
+    | '__root__'
+    | '/_layout'
+    | '/_layout/404'
+    | '/_layout/about'
+    | '/_layout/orders'
+    | '/_layout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -86,6 +101,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutOrdersRouteImport
       parentRoute: typeof LayoutRouteRoute
     }
+    '/_layout/about': {
+      id: '/_layout/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof LayoutAboutRouteImport
+      parentRoute: typeof LayoutRouteRoute
+    }
     '/_layout/404': {
       id: '/_layout/404'
       path: '/404'
@@ -98,12 +120,14 @@ declare module '@tanstack/react-router' {
 
 interface LayoutRouteRouteChildren {
   Layout404Route: typeof Layout404Route
+  LayoutAboutRoute: typeof LayoutAboutRoute
   LayoutOrdersRoute: typeof LayoutOrdersRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteRouteChildren: LayoutRouteRouteChildren = {
   Layout404Route: Layout404Route,
+  LayoutAboutRoute: LayoutAboutRoute,
   LayoutOrdersRoute: LayoutOrdersRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
