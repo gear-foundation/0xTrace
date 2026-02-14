@@ -42,7 +42,7 @@ pub mod registry {
         fn register_keys(
             &mut self,
             ethereum_address: H160,
-            stealth_meta_address: [u8; 66],
+            stealth_meta_address: String,
         ) -> sails_rs::client::PendingCall<io::RegisterKeys, Self::Env>;
         fn stealth_meta_address_of(
             &self,
@@ -55,7 +55,7 @@ pub mod registry {
         fn register_keys(
             &mut self,
             ethereum_address: H160,
-            stealth_meta_address: [u8; 66],
+            stealth_meta_address: String,
         ) -> sails_rs::client::PendingCall<io::RegisterKeys, Self::Env> {
             self.pending_call((ethereum_address, stealth_meta_address))
         }
@@ -69,8 +69,8 @@ pub mod registry {
 
     pub mod io {
         use super::*;
-        sails_rs::io_struct_impl!(RegisterKeys (ethereum_address: H160, stealth_meta_address: [u8; 66]) -> ());
-        sails_rs::io_struct_impl!(StealthMetaAddressOf (ethereum_address: H160) -> Option<[u8; 66]>);
+        sails_rs::io_struct_impl!(RegisterKeys (ethereum_address: H160, stealth_meta_address: String) -> ());
+        sails_rs::io_struct_impl!(StealthMetaAddressOf (ethereum_address: H160) -> Option<String>);
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -81,7 +81,7 @@ pub mod registry {
         pub enum RegistryEvents {
             StealthMetaAddressSet {
                 registrant: H160,
-                stealth_meta_address: [u8; 66],
+                stealth_meta_address: String,
             },
         }
         impl sails_rs::client::Event for RegistryEvents {

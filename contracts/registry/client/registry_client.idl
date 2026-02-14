@@ -3,13 +3,13 @@ constructor {
 };
 
 service Registry {
-  RegisterKeys : (ethereum_address: h160, stealth_meta_address: [u8, 66]) -> null;
-  query StealthMetaAddressOf : (ethereum_address: h160) -> opt [u8, 66];
+  RegisterKeys : (ethereum_address: h160, stealth_meta_address: str) -> null;
+  query StealthMetaAddressOf : (ethereum_address: h160) -> opt str;
 
   events {
     StealthMetaAddressSet: struct {
       registrant: h160,
-      stealth_meta_address: [u8, 66],
+      stealth_meta_address: str,
     };
   }
 };
