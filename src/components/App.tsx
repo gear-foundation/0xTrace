@@ -1,7 +1,7 @@
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { createTheme } from "@mui/material/styles";
-import { type AppKitNetwork, arbitrum, avalanche, base, bsc, hoodi, mainnet } from "@reown/appkit/networks";
+import { createTheme, useColorScheme } from "@mui/material/styles";
+import { type AppKitNetwork, hoodi } from "@reown/appkit/networks";
 import { createAppKit } from "@reown/appkit/react";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -12,6 +12,13 @@ import { WagmiProvider } from "wagmi";
 import { AlertProvider } from "@/contexts/AlertContext";
 import { VaraAccountProvider } from "@/contexts/VaraAccountContext";
 
+function Logo() {
+  const { mode, systemMode } = useColorScheme();
+  const resolved = mode === "system" ? systemMode : mode;
+  const src = resolved === "dark" ? "/logo-light.png" : "/logo-dark.png";
+  return <img src={src} alt="0xTrace" style={{ height: 32 }} />;
+}
+
 const THEME = createTheme({
   cssVariables: {
     colorSchemeSelector: "data-toolpad-color-scheme",
@@ -20,8 +27,8 @@ const THEME = createTheme({
 });
 
 const BRANDING = {
-  title: "0xTrace",
-  logo: <img src="/logo.png" alt="0xTrace" style={{ height: 32 }} />,
+  title: "",
+  logo: <Logo />,
 };
 
 const NAVIGATION: Navigation = [
@@ -39,8 +46,8 @@ const NAVIGATION: Navigation = [
 const queryClient = new QueryClient();
 
 const projectId = import.meta.env.VITE_REOWN_PROJECT_ID as string;
-const defaultNetwork = mainnet;
-const networks = [defaultNetwork, bsc, base, arbitrum, avalanche, hoodi] as [AppKitNetwork, ...AppKitNetwork[]];
+const defaultNetwork = hoodi;
+const networks = [defaultNetwork] as [AppKitNetwork, ...AppKitNetwork[]];
 const wagmiAdapter = new WagmiAdapter({ projectId, networks });
 
 createAppKit({

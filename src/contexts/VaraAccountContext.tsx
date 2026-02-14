@@ -29,7 +29,7 @@ type VaraAccountContextType = {
 
 const STORAGE_WALLET_KEY = "vara-wallet-id";
 const STORAGE_ACCOUNT_KEY = "vara-account-address";
-const VARA_RPC = "wss://testnet.vara.network";
+const VARA_RPC = import.meta.env.VITE_VARA_RPC as string;
 const VARA_DECIMALS = 12;
 
 const KNOWN_WALLETS: Record<string, string> = {

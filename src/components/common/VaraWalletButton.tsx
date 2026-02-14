@@ -263,7 +263,7 @@ function ConnectedView({
 
 type ModalView = "wallets" | "accounts" | "connected";
 
-export default function VaraWalletButton() {
+export default function VaraWalletButton({ compact = false }: { compact?: boolean }) {
   const { wallets, account, balance, tokenSymbol, isConnected, connectWallet, selectAccount, disconnect } =
     useVaraAccount();
   const alert = useAlert();
@@ -323,12 +323,12 @@ export default function VaraWalletButton() {
           onClick={handleOpen}
           startIcon={<VaraIcon />}
           sx={{
-            borderColor: "rgba(255,255,255,0.25)",
+            borderColor: "divider",
             color: "inherit",
             "&:hover": { borderColor: "#00FFC4", bgcolor: "rgba(0,255,196,0.08)" },
           }}
         >
-          Connect
+          Vara
         </Button>
       )}
       {isConnected && (
@@ -338,14 +338,14 @@ export default function VaraWalletButton() {
           startIcon={<VaraIcon />}
           sx={{
             textTransform: "none",
-            borderColor: "rgba(255,255,255,0.25)",
+            borderColor: "divider",
             color: "inherit",
             "&:hover": { borderColor: "#00FFC4", bgcolor: "rgba(0,255,196,0.08)" },
           }}
         >
           {account?.name || truncateAddress(account?.address ?? "")}
-          {!balance && <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />}
-          {balance && (
+          {!compact && !balance && <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />}
+          {!compact && balance && (
             <Typography component="span" variant="caption" sx={{ ml: 0.5, mt: "2px", opacity: 0.7, lineHeight: 1 }}>
               {balance} {tokenSymbol}
             </Typography>
