@@ -1,5 +1,6 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
-import { type Address, bytesToBigInt, checksumAddress, fromHex, type Hex, keccak256, toBytes, toHex } from "viem";
+import { blake2AsHex } from "@polkadot/util-crypto";
+import { bytesToBigInt, checksumAddress, fromHex, type Hex, keccak256, toBytes, toHex } from "viem";
 import { english, generateMnemonic, mnemonicToAccount, privateKeyToAddress } from "viem/accounts";
 
 export function generateMnemonicExtended() {
@@ -21,12 +22,12 @@ export function generateMnemonicExtended() {
   };
 }
 
-export function generateNewStealthAddress(chain: string = "eth") {
+export function generateNewStealthAddress() {
   const spend = generateMnemonicExtended();
   const view = generateMnemonicExtended();
 
   const stealthAddressHex = `0x${spend.publicKey.slice(2)}${view.publicKey.slice(2)}` as Hex;
-  const stealthAddress = `st:${chain}:${stealthAddressHex}`;
+  const stealthAddress = `${stealthAddressHex}`;
 
   return {
     spend,
@@ -36,18 +37,15 @@ export function generateNewStealthAddress(chain: string = "eth") {
   };
 }
 
-export function generateStealthAddress(stealthMetaAddress: string) {
-  const regExpMatch = stealthMetaAddress.match(/^st:([^:]+):0x([0-9a-fA-F]+)$/);
+export type Chain = "eth" | "vara";
+
+export function generateStealthAddress(stealthMetaAddress: string, chain: Chain) {
+  const regExpMatch = stealthMetaAddress.match(/^0x([0-9a-fA-F]+)$/);
   if (!regExpMatch) {
     throw new Error("Invalid stealth address format, expected: st:<chain>:0x<hex>");
   }
 
-  const chain = regExpMatch[1];
-  if (chain !== "eth") {
-    throw new Error("Unsupported chain");
-  }
-
-  const stealthMetaAddressHex = regExpMatch[2];
+  const stealthMetaAddressHex = regExpMatch[1];
   const EXPECTED_HEX_LEN = 66 * 2;
   if (stealthMetaAddressHex.length !== EXPECTED_HEX_LEN) {
     throw new Error("Invalid stealth hex length");
@@ -75,19 +73,29 @@ export function generateStealthAddress(stealthMetaAddress: string) {
 
   const stealthPublicKey = spendPublicKey.add(sharedSecretXHashedPublicKey).toBytes(false).slice(1);
   const stealthPublicKeyHash = keccak256(stealthPublicKey, "bytes").slice(12);
-  const stealthAddress = checksumAddress(`0x${toHex(stealthPublicKeyHash).slice(2)}`);
+
+  let stealthAddress = "0x" as Hex;
+
+  if (chain === "eth") {
+    stealthAddress = checksumAddress(`0x${toHex(stealthPublicKeyHash).slice(2)}`);
+  } else if (chain === "vara") {
+    const stealthPublicKeyCompressed = spendPublicKey.add(sharedSecretXHashedPublicKey).toBytes(true);
+    stealthAddress = blake2AsHex(stealthPublicKeyCompressed) as Hex;
+  }
 
   return {
     stealthAddress,
     ephemeralPublicKey,
     viewTag,
+    chain,
   };
 }
 
 export function checkStealthAddress(
-  expectedStealthAddress: Address,
+  expectedStealthAddress: Hex,
   ephemeralPublicKeyHex: Hex,
   expectedViewTagHex: Hex,
+  chain: Chain,
   viewingPrivateKey: Hex,
   spendingPublicKeyHex: Hex,
 ) {
@@ -108,14 +116,23 @@ export function checkStealthAddress(
 
   const stealthPublicKey = spendPublicKey.add(sharedSecretXHashedPublicKey).toBytes(false).slice(1);
   const stealthPublicKeyHash = keccak256(stealthPublicKey, "bytes").slice(12);
-  const stealthAddress = checksumAddress(`0x${toHex(stealthPublicKeyHash).slice(2)}`);
+
+  let stealthAddress = "0x" as Hex;
+
+  if (chain === "eth") {
+    stealthAddress = checksumAddress(`0x${toHex(stealthPublicKeyHash).slice(2)}`);
+  } else if (chain === "vara") {
+    const stealthPublicKeyCompressed = spendPublicKey.add(sharedSecretXHashedPublicKey).toBytes(true);
+    stealthAddress = blake2AsHex(stealthPublicKeyCompressed) as Hex;
+  }
 
   return expectedStealthAddress === stealthAddress;
 }
 
 export function computeStealthKey(
-  expectedStealthAddress: Address,
+  expectedStealthAddress: Hex,
   ephemeralPublicKeyHex: Hex,
+  chain: Chain,
   viewingPrivateKey: Hex,
   spendingPrivateKey: Hex,
 ) {
@@ -127,7 +144,17 @@ export function computeStealthKey(
 
   const stealthPrivateKey =
     (BigInt(spendingPrivateKey) + bytesToBigInt(sharedSecretXHashed)) % secp256k1.Point.CURVE().n;
-  if (privateKeyToAddress(toHex(stealthPrivateKey)) !== expectedStealthAddress) {
+
+  let stealthAddress = "0x" as Hex;
+
+  if (chain === "eth") {
+    stealthAddress = privateKeyToAddress(toHex(stealthPrivateKey, { size: 32 }));
+  } else if (chain === "vara") {
+    const stealthPublicKeyCompressed = secp256k1.Point.fromPrivateKey(stealthPrivateKey).toBytes(true);
+    stealthAddress = blake2AsHex(stealthPublicKeyCompressed) as Hex;
+  }
+
+  if (stealthAddress !== expectedStealthAddress) {
     throw new Error("Computed stealth private key does not match expected stealth address");
   }
 
