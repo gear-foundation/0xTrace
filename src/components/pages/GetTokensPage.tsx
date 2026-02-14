@@ -112,7 +112,7 @@ export default function GetTokensPage() {
             <Button
               variant="outlined"
               startIcon={<OpenInNewIcon />}
-              href="https://hoodifaucet.io"
+              href="https://cloud.google.com/application/web3/faucet/ethereum/hoodi"
               target="_blank"
               rel="noopener noreferrer"
               sx={{
