@@ -49,7 +49,7 @@ function EthWalletButton({ compact = false }: { compact?: boolean }) {
         onClick={() => open({ view: "Connect" })}
         startIcon={<EthIcon />}
         sx={{
-          borderColor: "rgba(255,255,255,0.25)",
+          borderColor: "divider",
           color: "inherit",
           "&:hover": { borderColor: "#627EEA", bgcolor: "rgba(98,126,234,0.08)" },
         }}
@@ -68,7 +68,7 @@ function EthWalletButton({ compact = false }: { compact?: boolean }) {
       startIcon={<EthIcon />}
       sx={{
         textTransform: "none",
-        borderColor: "rgba(255,255,255,0.25)",
+        borderColor: "divider",
         color: "inherit",
         "&:hover": { borderColor: "#627EEA", bgcolor: "rgba(98,126,234,0.08)" },
       }}
@@ -123,7 +123,7 @@ export default function CustomToolbarActions() {
               <Stack
                 direction="column"
                 spacing={1}
-                sx={{ "& .MuiButton-root": { width: "100%", justifyContent: "flex-start" } }}
+                sx={{ "& .MuiButton-root": { width: "100%", justifyContent: "center" } }}
               >
                 <VaraWalletButton />
                 <EthWalletButton />

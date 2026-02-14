@@ -323,7 +323,7 @@ export default function VaraWalletButton({ compact = false }: { compact?: boolea
           onClick={handleOpen}
           startIcon={<VaraIcon />}
           sx={{
-            borderColor: "rgba(255,255,255,0.25)",
+            borderColor: "divider",
             color: "inherit",
             "&:hover": { borderColor: "#00FFC4", bgcolor: "rgba(0,255,196,0.08)" },
           }}
@@ -338,7 +338,7 @@ export default function VaraWalletButton({ compact = false }: { compact?: boolea
           startIcon={<VaraIcon />}
           sx={{
             textTransform: "none",
-            borderColor: "rgba(255,255,255,0.25)",
+            borderColor: "divider",
             color: "inherit",
             "&:hover": { borderColor: "#00FFC4", bgcolor: "rgba(0,255,196,0.08)" },
           }}
