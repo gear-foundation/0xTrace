@@ -18,7 +18,9 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Stack from "@mui/material/Stack";
 import SvgIcon from "@mui/material/SvgIcon";
+import { useTheme } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { useCallback, useState } from "react";
 import type { DetectedWallet, VaraAccount } from "@/contexts/VaraAccountContext";
 import { useAlert } from "@/hooks/useAlert";
@@ -264,6 +266,8 @@ function ConnectedView({
 type ModalView = "wallets" | "accounts" | "connected";
 
 export default function VaraWalletButton() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { wallets, account, balance, tokenSymbol, isConnected, connectWallet, selectAccount, disconnect } =
     useVaraAccount();
   const alert = useAlert();
@@ -344,8 +348,8 @@ export default function VaraWalletButton() {
           }}
         >
           {account?.name || truncateAddress(account?.address ?? "")}
-          {!balance && <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />}
-          {balance && (
+          {!isMobile && !balance && <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />}
+          {!isMobile && balance && (
             <Typography component="span" variant="caption" sx={{ ml: 0.5, mt: "2px", opacity: 0.7, lineHeight: 1 }}>
               {balance} {tokenSymbol}
             </Typography>

@@ -2,7 +2,9 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
 import SvgIcon from "@mui/material/SvgIcon";
+import { useTheme } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { useAppKit } from "@reown/appkit/react";
 import { formatUnits } from "viem";
 import { useAccount, useBalance } from "wagmi";
@@ -26,6 +28,8 @@ function truncateAddress(address: string, chars = 4): string {
 }
 
 export default function CustomToolbarActions() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { open } = useAppKit();
   const { isConnected, address } = useAccount();
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance({ address });
@@ -64,8 +68,10 @@ export default function CustomToolbarActions() {
           }}
         >
           {truncateAddress(address)}
-          {isBalanceLoading && <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />}
-          {formattedBalance && (
+          {!isMobile && isBalanceLoading && (
+            <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />
+          )}
+          {!isMobile && formattedBalance && (
             <Typography component="span" variant="caption" sx={{ ml: 0.5, mt: "2px", opacity: 0.7, lineHeight: 1 }}>
               {formattedBalance} {balanceData?.symbol}
             </Typography>
