@@ -133,7 +133,7 @@ export default function AboutPage() {
         <Button
           variant="outlined"
           startIcon={<GitHubIcon />}
-          href="https://github.com/gear-foundation/stealth-addresses"
+          href="https://github.com/StackOverflowExcept1on/0xTrace"
           target="_blank"
           rel="noopener noreferrer"
           sx={{
