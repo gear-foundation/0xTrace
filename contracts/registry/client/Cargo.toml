@@ -1,10 +1,10 @@
 [package]
-name = "registry-app"
+name = "registry-client"
 version.workspace = true
 authors.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-description = "Package containing business logic for the program"
+description = "Package containing the client for the program allowing to interact with it"
 repository.workspace = true
 license.workspace = true
 keywords.workspace = true
@@ -14,4 +14,5 @@ categories.workspace = true
 sails-rs.workspace = true
 
 [build-dependencies]
-sails-rs = { workspace = true, features = ["wasm-builder"] }
+registry-app.workspace = true
+sails-rs = { workspace = true, features = ["build"] }

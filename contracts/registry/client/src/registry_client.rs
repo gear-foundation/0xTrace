@@ -5,14 +5,14 @@ pub struct RegistryClientProgram;
 impl sails_rs::client::Program for RegistryClientProgram {}
 pub trait RegistryClient {
     type Env: sails_rs::client::GearEnv;
-    fn redirect(&self) -> sails_rs::client::Service<redirect::RedirectImpl, Self::Env>;
+    fn registry(&self) -> sails_rs::client::Service<registry::RegistryImpl, Self::Env>;
 }
 impl<E: sails_rs::client::GearEnv> RegistryClient
     for sails_rs::client::Actor<RegistryClientProgram, E>
 {
     type Env = E;
-    fn redirect(&self) -> sails_rs::client::Service<redirect::RedirectImpl, Self::Env> {
-        self.service(stringify!(Redirect))
+    fn registry(&self) -> sails_rs::client::Service<registry::RegistryImpl, Self::Env> {
+        self.service(stringify!(Registry))
     }
 }
 pub trait RegistryClientCtors {
@@ -35,32 +35,42 @@ pub mod io {
     sails_rs::io_struct_impl!(New () -> ());
 }
 
-pub mod redirect {
+pub mod registry {
     use super::*;
-    pub trait Redirect {
+    pub trait Registry {
         type Env: sails_rs::client::GearEnv;
-        /// TODO: use signature, instead of `eth_address`
         fn register_keys(
             &mut self,
-            eth_address: H160,
+            ethereum_address: H160,
             stealth_meta_address: [u8; 66],
         ) -> sails_rs::client::PendingCall<io::RegisterKeys, Self::Env>;
+        fn stealth_meta_address_of(
+            &self,
+            ethereum_address: H160,
+        ) -> sails_rs::client::PendingCall<io::StealthMetaAddressOf, Self::Env>;
     }
-    pub struct RedirectImpl;
-    impl<E: sails_rs::client::GearEnv> Redirect for sails_rs::client::Service<RedirectImpl, E> {
+    pub struct RegistryImpl;
+    impl<E: sails_rs::client::GearEnv> Registry for sails_rs::client::Service<RegistryImpl, E> {
         type Env = E;
         fn register_keys(
             &mut self,
-            eth_address: H160,
+            ethereum_address: H160,
             stealth_meta_address: [u8; 66],
         ) -> sails_rs::client::PendingCall<io::RegisterKeys, Self::Env> {
-            self.pending_call((eth_address, stealth_meta_address))
+            self.pending_call((ethereum_address, stealth_meta_address))
+        }
+        fn stealth_meta_address_of(
+            &self,
+            ethereum_address: H160,
+        ) -> sails_rs::client::PendingCall<io::StealthMetaAddressOf, Self::Env> {
+            self.pending_call((ethereum_address,))
         }
     }
 
     pub mod io {
         use super::*;
-        sails_rs::io_struct_impl!(RegisterKeys (eth_address: H160, stealth_meta_address: [u8; 66]) -> ());
+        sails_rs::io_struct_impl!(RegisterKeys (ethereum_address: H160, stealth_meta_address: [u8; 66]) -> ());
+        sails_rs::io_struct_impl!(StealthMetaAddressOf (ethereum_address: H160) -> Option<[u8; 66]>);
     }
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -68,14 +78,17 @@ pub mod redirect {
         use super::*;
         #[derive(PartialEq, Debug, Encode, Decode)]
         #[codec(crate = sails_rs::scale_codec)]
-        pub enum RedirectEvents {
-            KeyAdded(H160),
+        pub enum RegistryEvents {
+            StealthMetaAddressSet {
+                registrant: H160,
+                stealth_meta_address: [u8; 66],
+            },
         }
-        impl sails_rs::client::Event for RedirectEvents {
-            const EVENT_NAMES: &'static [Route] = &["KeyAdded"];
+        impl sails_rs::client::Event for RegistryEvents {
+            const EVENT_NAMES: &'static [Route] = &["StealthMetaAddressSet"];
         }
-        impl sails_rs::client::ServiceWithEvents for RedirectImpl {
-            type Event = RedirectEvents;
+        impl sails_rs::client::ServiceWithEvents for RegistryImpl {
+            type Event = RegistryEvents;
         }
     }
 }
