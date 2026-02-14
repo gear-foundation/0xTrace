@@ -1,3 +1,4 @@
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Box from "@mui/material/Box";
@@ -7,7 +8,6 @@ import CardContent from "@mui/material/CardContent";
 import CircularProgress from "@mui/material/CircularProgress";
 import SvgIcon from "@mui/material/SvgIcon";
 import Typography from "@mui/material/Typography";
-import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { useAlert } from "@/hooks/useAlert";
