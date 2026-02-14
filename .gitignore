@@ -28,7 +28,3 @@ dist-ssr
 
 # Environment files
 .env
-
-# Contract build artifacts
-announcer/
-registry/
