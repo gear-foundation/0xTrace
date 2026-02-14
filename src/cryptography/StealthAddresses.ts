@@ -62,11 +62,7 @@ export function generateStealthAddress(stealthMetaAddress: string) {
   const spendPublicKey = secp256k1.Point.fromBytes(new Uint8Array(spendPublicKeyBuffer));
   const viewPublicKey = secp256k1.Point.fromBytes(new Uint8Array(viewPublicKeyBuffer));
 
-  //const ephemeralPrivateKey = secp256k1.utils.randomPrivateKey();
-  const ephemeralPrivateKey = fromHex("0x5966e42b1db433cdeca15434ff2fa8b8bea7a4d9aa95a41cffcd0fd54cb020cf", {
-    size: 32,
-    to: "bytes",
-  });
+  const ephemeralPrivateKey = secp256k1.utils.randomPrivateKey();
   const ephemeralPublicKey = toHex(secp256k1.Point.fromPrivateKey(ephemeralPrivateKey).toBytes());
 
   const sharedSecretPoint = viewPublicKey.multiply(bytesToBigInt(ephemeralPrivateKey)).toAffine();
@@ -130,7 +126,7 @@ export function computeStealthKey(
   const sharedSecretXHashed = keccak256(toBytes(sharedSecretX), "bytes");
 
   const stealthPrivateKey =
-    BigInt(spendingPrivateKey) + (bytesToBigInt(sharedSecretXHashed) % secp256k1.Point.CURVE().n);
+    (BigInt(spendingPrivateKey) + bytesToBigInt(sharedSecretXHashed)) % secp256k1.Point.CURVE().n;
   if (privateKeyToAddress(toHex(stealthPrivateKey)) !== expectedStealthAddress) {
     throw new Error("Computed stealth private key does not match expected stealth address");
   }
