@@ -1,36 +1,67 @@
 #![no_std]
 
-use sails_rs::prelude::*;
+use sails_rs::{collections::HashMap, prelude::*};
 
-struct Registry(());
+type StealthMetaAddress = [u8; 66];
 
-impl Registry {
-    pub fn create() -> Self {
-        Self(())
+#[derive(Default)]
+pub struct ProtocolData {
+    stealth_meta_of: HashMap<H160, StealthMetaAddress>,
+}
+
+// Service event type definition.
+#[event]
+#[derive(Clone, Debug, PartialEq, Encode, TypeInfo)]
+#[codec(crate = sails_rs::scale_codec)]
+#[scale_info(crate = sails_rs::scale_info)]
+pub enum Events {
+    KeyAdded(H160),
+}
+
+pub struct ZeroTraceService {
+    data: ProtocolData,
+}
+
+impl ZeroTraceService {
+    // Service constrctor demands a reference to the data to be passed
+    // from the outside.
+    pub fn new(data: ProtocolData) -> Self {
+        Self { data }
     }
 }
 
-#[sails_rs::service]
-impl Registry {
-    // Service's method (command)
+// Declare the service can emit events of type CounterEvents.
+#[service(events = Events)]
+impl ZeroTraceService {
+    /// TODO: use signature, instead of `eth_address`
     #[export]
-    pub fn do_something(&mut self) -> String {
-        "Hello from Registry!".to_string()
+    pub fn register_keys(&mut self, eth_address: H160, stealth_meta_address: StealthMetaAddress) {
+        self.data
+            .stealth_meta_of
+            .insert(eth_address, stealth_meta_address);
     }
 }
 
 #[derive(Default)]
-pub struct Program(());
+pub struct ZeroTraceProgram;
 
 #[sails_rs::program]
-impl Program {
-    // Program's constructor
-    pub fn create() -> Self {
-        Self(())
+impl ZeroTraceProgram {
+    // Redirect Program's constructor
+    pub fn new() -> Self {
+        Self
     }
 
-    // Exposed service
-    pub fn registry(&self) -> Registry {
-        Registry::create()
+    // Exposed Redirect service
+    pub fn redirect(&self) -> ZeroTraceService {
+        ZeroTraceService::new(ProtocolData::default())
     }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub use code::WASM_BINARY_OPT as WASM_BINARY;
+
+#[cfg(not(target_arch = "wasm32"))]
+mod code {
+    include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 }

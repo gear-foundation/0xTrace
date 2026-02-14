@@ -1675,6 +1675,7 @@ dependencies = [
 name = "registry-client"
 version = "0.1.0"
 dependencies = [
+ "registry-app",
  "sails-rs",
 ]
 

@@ -1,0 +1,13 @@
+constructor {
+  New : ();
+};
+
+service Redirect {
+  /// TODO: use signature, instead of `eth_address`
+  RegisterKeys : (eth_address: h160, stealth_meta_address: [u8, 66]) -> null;
+
+  events {
+    KeyAdded: h160;
+  }
+};
+
