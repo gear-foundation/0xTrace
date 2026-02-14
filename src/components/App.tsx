@@ -1,5 +1,6 @@
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import TokenIcon from "@mui/icons-material/Token";
 import { createTheme, useColorScheme } from "@mui/material/styles";
 import { type AppKitNetwork, hoodi } from "@reown/appkit/networks";
 import { createAppKit } from "@reown/appkit/react";
@@ -38,8 +39,13 @@ const NAVIGATION: Navigation = [
   },
   {
     segment: "orders",
-    title: "Orders",
-    icon: <ShoppingCartIcon />,
+    title: "Get Tokens",
+    icon: <TokenIcon />,
+  },
+  {
+    segment: "about",
+    title: "About",
+    icon: <InfoOutlinedIcon />,
   },
 ];
 
