@@ -1,6 +1,6 @@
 #![no_std]
 
-use sails_rs::{H160, cell::RefCell, collections::HashMap, prelude::*};
+use sails_rs::{cell::RefCell, collections::HashMap, prelude::*, H160};
 
 type StealthMetaAddress = String;
 
@@ -46,14 +46,14 @@ impl RegistryService<'_> {
         ethereum_address: H160,
         stealth_meta_address: StealthMetaAddress,
     ) {
-        let Some(stealth_without_0x) = stealth_meta_address.strip_prefix("0x") else {
-            return;
+        let Some(stealth_meta_address_stripped) = stealth_meta_address.strip_prefix("0x") else {
+            panic!("Stealth meta address must be a 0x-prefixed hex string")
         };
 
         // Check that `stealth_without_0x` can be correctly encoded to `[u8; 66]`.
-        let mut buffer: [u8; 66] = [0u8; 66];
-        if sails_rs::hex::decode_to_slice(stealth_without_0x, &mut buffer).is_err() {
-            return;
+        let mut buffer: [u8; 66] = [0; 66];
+        if sails_rs::hex::decode_to_slice(stealth_meta_address_stripped, &mut buffer).is_err() {
+            panic!("Stealth meta address must be a valid [u8; 66] array encoded as hex string");
         };
 
         // TODO: recover ethereum address from signature instead of accepting it as an argument
