@@ -13,19 +13,21 @@
   "dependencies": {
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
+    "@gear-js/api": "^0.44.2",
     "@mui/icons-material": "latest",
     "@mui/material": "latest",
     "@noble/curves": "^1.9.1",
+    "@polkadot/extension-dapp": "^0.62.6",
     "@reown/appkit": "latest",
     "@reown/appkit-adapter-wagmi": "latest",
     "@tanstack/react-query": "latest",
     "@tanstack/react-router": "latest",
     "@toolpad/core": "latest",
+    "@wagmi/core": "^2.22.1",
     "react": "latest",
     "react-dom": "latest",
     "viem": "latest",
-    "wagmi": "^2.19.5",
-    "@wagmi/core": "^2.22.1"
+    "wagmi": "^2.19.5"
   },
   "devDependencies": {
     "@biomejs/biome": "latest",
