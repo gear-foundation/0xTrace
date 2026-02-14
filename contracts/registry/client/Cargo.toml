@@ -14,4 +14,5 @@ categories.workspace = true
 sails-rs.workspace = true
 
 [build-dependencies]
+registry-app.workspace = true
 sails-rs = { workspace = true, features = ["build"] }
