@@ -14,6 +14,7 @@ import { useWriteContract } from "wagmi";
 import { abi as ERC6538RegistryAbi, address as ERC6538RegistryAddress } from "@/contracts/ERC6538Registry";
 import { generateNewStealthAddress } from "@/cryptography/StealthAddresses";
 import { useAlert } from "@/hooks/useAlert";
+import { useVaraAccount } from "@/hooks/useVaraAccount";
 
 function FieldRow({ label, value, onCopy }: { label: string; value: string; onCopy: () => void }) {
   return (
@@ -40,9 +41,11 @@ function FieldRow({ label, value, onCopy }: { label: string; value: string; onCo
 }
 
 export default function DashboardPage() {
-  const { isConnected } = useAppKitAccount();
+  const { isConnected: isEthereumConnected } = useAppKitAccount();
+  const { isConnected: isVaraConnected } = useVaraAccount();
   const { writeContract } = useWriteContract();
   const alert = useAlert();
+  const canRegister = isEthereumConnected && isVaraConnected;
 
   const [keys, setKeys] = useState(() => generateNewStealthAddress());
   const { spend, view, stealthAddressHex, stealthAddress } = keys;
@@ -80,17 +83,28 @@ export default function DashboardPage() {
   }, []);
 
   const handleRegister = useCallback(() => {
-    if (isConnected) {
-      writeContract({
-        abi: ERC6538RegistryAbi,
-        address: ERC6538RegistryAddress,
-        functionName: "registerKeys",
-        args: [1n, stealthAddressHex],
-      });
-    } else {
-      alert.warning("Please connect your wallet before registering.");
+    if (!isEthereumConnected && !isVaraConnected) {
+      alert.warning("Please connect your Ethereum and VARA wallets before registering.");
+      return;
     }
-  }, [isConnected, writeContract, stealthAddressHex, alert]);
+
+    if (!isEthereumConnected) {
+      alert.warning("Please connect your Ethereum wallet before registering.");
+      return;
+    }
+
+    if (!isVaraConnected) {
+      alert.warning("Please connect your VARA wallet before registering.");
+      return;
+    }
+
+    writeContract({
+      abi: ERC6538RegistryAbi,
+      address: ERC6538RegistryAddress,
+      functionName: "registerKeys",
+      args: [1n, stealthAddressHex],
+    });
+  }, [isEthereumConnected, isVaraConnected, writeContract, stealthAddressHex, alert]);
 
   const fields = useMemo(
     () => [
@@ -121,7 +135,7 @@ export default function DashboardPage() {
           Backup
         </Button>
 
-        <Button variant="outlined" onClick={handleRegister} startIcon={<HowToRegIcon />}>
+        <Button variant="outlined" onClick={handleRegister} startIcon={<HowToRegIcon />} disabled={!canRegister}>
           Register
         </Button>
       </Box>
