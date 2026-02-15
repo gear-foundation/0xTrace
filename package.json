@@ -27,6 +27,8 @@
     "@wagmi/core": "^2.22.1",
     "react": "latest",
     "react-dom": "latest",
+    "sails-js": "^0.5.1",
+    "sails-js-parser": "^0.5.1",
     "viem": "latest",
     "wagmi": "^2.19.5"
   },

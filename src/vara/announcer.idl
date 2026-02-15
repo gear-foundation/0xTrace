@@ -1,0 +1,26 @@
+type Announcement = struct {
+  stealth_address: h160,
+  caller: h160,
+  ephemeral_pub_key: vec u8,
+  metadata: vec u8,
+  chain: Chain,
+};
+
+type Chain = enum {
+  Ethereum,
+  Vara,
+};
+
+constructor {
+  New : ();
+};
+
+service Announcer {
+  Announce : (announcement: Announcement) -> null;
+  query Announcements : (offset: u32, limit: u32) -> vec Announcement;
+  query AnnouncementsLen : () -> u32;
+
+  events {
+    Announcement: Announcement;
+  }
+};

@@ -26,11 +26,11 @@ import Tabs from "@mui/material/Tabs";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useAppKitAccount } from "@reown/appkit/react";
-import { type SyntheticEvent, useCallback, useState } from "react";
-import { useWriteContract } from "wagmi";
-import { abi as ERC6538RegistryAbi, address as ERC6538RegistryAddress } from "@/contracts/ERC6538Registry";
+import { type SyntheticEvent, useCallback, useEffect, useState } from "react";
+import { useAccount } from "wagmi";
 import { generateNewStealthAddress, generateStealthAddress } from "@/cryptography/StealthAddresses";
 import { useAlert } from "@/hooks/useAlert";
+import { useRegistryService } from "@/hooks/useRegistryService";
 import { useVaraAccount } from "@/hooks/useVaraAccount";
 
 function FieldRow({
@@ -62,14 +62,42 @@ function FieldRow({
 }
 
 function ReceiveTab() {
-  const { isConnected: isEthereumConnected } = useAppKitAccount();
+  const { address: ethAddress, isConnected: isEthereumConnected } = useAccount();
   const { isConnected: isVaraConnected } = useVaraAccount();
-  const { writeContract } = useWriteContract();
+  const { ready: registryReady, registerKeys, stealthMetaAddressOf } = useRegistryService();
   const alert = useAlert();
-  const canRegister = isEthereumConnected && isVaraConnected;
 
   const [keys, setKeys] = useState(() => generateNewStealthAddress());
   const { spend, view, stealthAddressHex, stealthAddress } = keys;
+
+  const [registeredAddress, setRegisteredAddress] = useState<string | null>(null);
+  const [checkingState, setCheckingState] = useState(false);
+  const [registering, setRegistering] = useState(false);
+
+  const canRegister = isEthereumConnected && isVaraConnected && registryReady;
+  const isAlreadyRegistered = !!registeredAddress;
+
+  useEffect(() => {
+    if (!ethAddress || !registryReady) {
+      setRegisteredAddress(null);
+      return;
+    }
+    let cancelled = false;
+    setCheckingState(true);
+    stealthMetaAddressOf(ethAddress)
+      .then((addr) => {
+        if (!cancelled) setRegisteredAddress(addr);
+      })
+      .catch(() => {
+        if (!cancelled) setRegisteredAddress(null);
+      })
+      .finally(() => {
+        if (!cancelled) setCheckingState(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ethAddress, registryReady, stealthMetaAddressOf]);
 
   const copyToClipboard = useCallback(
     async (text: string) => {
@@ -103,11 +131,7 @@ function ReceiveTab() {
     setKeys(generateNewStealthAddress());
   }, []);
 
-  const handleRegister = useCallback(() => {
-    if (!isEthereumConnected && !isVaraConnected) {
-      alert.warning("Please connect both wallets before registering.");
-      return;
-    }
+  const handleRegister = useCallback(async () => {
     if (!isEthereumConnected) {
       alert.warning("Please connect your Ethereum wallet.");
       return;
@@ -116,21 +140,48 @@ function ReceiveTab() {
       alert.warning("Please connect your Vara wallet.");
       return;
     }
+    if (!registryReady) {
+      alert.warning("Registry service is not ready yet.");
+      return;
+    }
+    if (!ethAddress) return;
 
-    writeContract({
-      abi: ERC6538RegistryAbi,
-      address: ERC6538RegistryAddress,
-      functionName: "registerKeys",
-      args: [1n, stealthAddressHex],
-    });
-  }, [isEthereumConnected, isVaraConnected, writeContract, stealthAddressHex, alert]);
+    setRegistering(true);
+    try {
+      await registerKeys(ethAddress, stealthAddressHex);
+      setRegisteredAddress(stealthAddressHex);
+      alert.success("Stealth meta-address registered on Vara!");
+    } catch (e) {
+      alert.error(e instanceof Error ? e.message : "Registration failed");
+    } finally {
+      setRegistering(false);
+    }
+  }, [isEthereumConnected, isVaraConnected, registryReady, ethAddress, registerKeys, stealthAddressHex, alert]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Alert severity="warning">
-        <AlertTitle>Important</AlertTitle>
-        Backup both 12-word mnemonics (24 words total). You will need them to access your wallet.
-      </Alert>
+      {checkingState && (
+        <Alert severity="info" icon={<CircularProgress size={18} />}>
+          Checking registration state...
+        </Alert>
+      )}
+
+      {!checkingState && isAlreadyRegistered && (
+        <Alert severity="success">
+          <AlertTitle>Already Registered</AlertTitle>
+          Your Ethereum address is registered on Vara with stealth meta-address:
+          <Typography variant="caption" component="div" sx={{ mt: 0.5, fontFamily: "monospace", wordBreak: "break-all" }}>
+            {registeredAddress}
+          </Typography>
+        </Alert>
+      )}
+
+      {!checkingState && !isAlreadyRegistered && (
+        <Alert severity="warning">
+          <AlertTitle>Important</AlertTitle>
+          Backup both 12-word mnemonics (24 words total). You will need them to access your wallet.
+        </Alert>
+      )}
 
       <FieldRow label="Stealth meta-address" value={stealthAddress} placeholder="st:eth:0x..." onCopy={handleCopyStealth} />
       <FieldRow label="Spend mnemonic" value={spend.mnemonic} placeholder="12 words" onCopy={handleCopySpend} />
@@ -143,8 +194,14 @@ function ReceiveTab() {
         <Button variant="outlined" onClick={handleBackup} startIcon={<ContentCopyIcon />}>
           Backup
         </Button>
-        <Button variant="outlined" onClick={handleRegister} startIcon={<HowToRegIcon />} disabled={!canRegister}>
-          Register
+        <Button
+          variant="outlined"
+          onClick={handleRegister}
+          startIcon={registering ? <CircularProgress size={16} /> : <HowToRegIcon />}
+          disabled={!canRegister || registering}
+          sx={{ borderColor: "#9cef3b", color: "#9cef3b", "&:hover": { borderColor: "#9cef3b", bgcolor: "rgba(156,239,59,0.08)" } }}
+        >
+          {registering ? "Registering..." : "Register"}
         </Button>
       </Box>
     </Box>
@@ -254,7 +311,13 @@ function SendTab() {
         helperText="Paste manually or use Lookup to fetch from Vara Registry"
       />
 
-      <Button variant="outlined" onClick={handleComputeStealth} startIcon={<VisibilityIcon />} disabled={!metaAddress}>
+      <Button
+        variant="outlined"
+        onClick={handleComputeStealth}
+        startIcon={<VisibilityIcon />}
+        disabled={!metaAddress}
+        sx={{ borderColor: "#9cef3b", color: "#9cef3b", "&:hover": { borderColor: "#9cef3b", bgcolor: "rgba(156,239,59,0.08)" } }}
+      >
         Compute Stealth Address
       </Button>
 
@@ -285,6 +348,7 @@ function SendTab() {
               onClick={handleSend}
               startIcon={sendLoading ? <CircularProgress size={16} /> : <SendIcon />}
               disabled={sendLoading || !isEthereumConnected || !isVaraConnected}
+              sx={{ borderColor: "#9cef3b", color: "#9cef3b", "&:hover": { borderColor: "#9cef3b", bgcolor: "rgba(156,239,59,0.08)" } }}
             >
               Announce & Send
             </Button>
@@ -380,6 +444,7 @@ function ClaimTab() {
           onClick={handleScan}
           startIcon={scanning ? <CircularProgress size={16} /> : <SearchIcon />}
           disabled={scanning || !spendMnemonic || !viewMnemonic}
+          sx={{ borderColor: "#9cef3b", color: "#9cef3b", "&:hover": { borderColor: "#9cef3b", bgcolor: "rgba(156,239,59,0.08)" } }}
         >
           {scanning ? "Scanning..." : "Scan Announcements"}
         </Button>
@@ -403,7 +468,12 @@ function ClaimTab() {
                   </TableCell>
                   <TableCell sx={{ fontFamily: "monospace", fontSize: 12 }}>{r.viewTag}</TableCell>
                   <TableCell align="right">
-                    <Button size="small" variant="outlined" onClick={() => handleWithdraw(r)}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => handleWithdraw(r)}
+                      sx={{ borderColor: "#9cef3b", color: "#9cef3b", "&:hover": { borderColor: "#9cef3b", bgcolor: "rgba(156,239,59,0.08)" } }}
+                    >
                       Withdraw
                     </Button>
                   </TableCell>
@@ -432,7 +502,13 @@ export default function DashboardPage() {
 
   return (
     <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
-      <Tabs value={tab} onChange={handleTabChange} variant="fullWidth">
+      <Tabs
+        value={tab}
+        onChange={handleTabChange}
+        variant="fullWidth"
+        TabIndicatorProps={{ sx: { bgcolor: "#9cef3b" } }}
+        sx={{ "& .Mui-selected": { color: "#9cef3b !important" } }}
+      >
         <Tab icon={<CallReceivedIcon />} label="Receive" iconPosition="start" />
         <Tab icon={<CallMadeIcon />} label="Send" iconPosition="start" />
         <Tab icon={<SearchIcon />} label="Claim" iconPosition="start" />

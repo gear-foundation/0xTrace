@@ -1,0 +1,16 @@
+constructor {
+  New : ();
+};
+
+service Registry {
+  RegisterKeys : (ethereum_address: h160, stealth_meta_address: str) -> null;
+  query StealthMetaAddressOf : (ethereum_address: h160) -> opt str;
+
+  events {
+    StealthMetaAddressSet: struct {
+      registrant: h160,
+      stealth_meta_address: str,
+    };
+  }
+};
+
