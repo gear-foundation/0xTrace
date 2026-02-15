@@ -12,3 +12,9 @@ categories.workspace = true
 
 [dependencies]
 sails-rs.workspace = true
+k256 = { version = "0.13.4", default-features = false, features = ["ecdsa", "arithmetic"] }
+sha3 = { version = "0.10", default-features = false }
+
+[dev-dependencies]
+hex = "0.4"
+rand_core = "0.6"
