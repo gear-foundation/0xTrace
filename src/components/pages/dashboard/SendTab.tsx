@@ -213,9 +213,16 @@ export function SendTab() {
     }
     setAnnounceLoading(true);
     try {
+      console.log(stealthResult.stealthAddress);
+      if (stealthResult.chain === "eth") {
+        console.log(123);
+      }
       await announce({
-        stealth_address: stealthResult.stealthAddress,
-        caller: senderEthAddress,
+        stealth_address:
+          stealthResult.chain === "eth"
+            ? `0x${"00".repeat(12)}${stealthResult.stealthAddress.slice(2)}`
+            : stealthResult.stealthAddress,
+        caller: stealthResult.chain === "eth" ? `0x${"00".repeat(12)}${senderEthAddress.slice(2)}` : senderEthAddress,
         ephemeral_pub_key: stealthResult.ephemeralPublicKey,
         metadata: stealthResult.viewTag,
         chain: stealthResult.chain === "eth" ? "Ethereum" : "Vara",

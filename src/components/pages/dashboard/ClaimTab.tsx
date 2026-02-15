@@ -105,9 +105,14 @@ export function ClaimTab() {
             typeof ann.metadata === "string" ? ann.metadata : `0x${Buffer.from(ann.metadata).toString("hex")}`
           ) as `0x${string}`;
           const chain: Chain = ann.chain === "Ethereum" ? "eth" : "vara";
-          const stealthAddr = ann.stealth_address.startsWith("0x")
+          const stealthAddr1 = ann.stealth_address.startsWith("0x")
             ? (ann.stealth_address as `0x${string}`)
             : (`0x${ann.stealth_address}` as `0x${string}`);
+          const stealthAddr = (
+            ann.chain === "Ethereum" && stealthAddr1.startsWith("0x000000000000000000000000")
+              ? `0x${stealthAddr1.slice(26)}`
+              : stealthAddr1
+          ) as `0x${string}`;
 
           console.log(`[ClaimTab] Processing announcement:`, {
             raw: ann,
