@@ -2,5 +2,26 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+evm_version = "osaka"
+solc = "0.8.33"
+optimizer = true
+extra_output_files = ["irOptimized"]
+via_ir = true
+bytecode_hash = "none"
+cbor_metadata = false
+revert_strings = "strip"
+
+[fmt]
+sort_imports = true
+
+[rpc_endpoints]
+mainnet = "${MAINNET_RPC_URL}"
+sepolia = "${SEPOLIA_RPC_URL}"
+hoodi = "${HOODI_RPC_URL}"
+
+[etherscan]
+mainnet = { key = "${ETHERSCAN_API_KEY}" }
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+hoodi = { key = "${ETHERSCAN_API_KEY}" }
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

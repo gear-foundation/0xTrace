@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.33;
 
 contract BeerMarket {
-    /// @notice The beer price is `0.00048 ETH`.
-    uint256 public constant BEER_PRICE = 48 * 10 ** 13;
+    uint256 public constant BEER_PRICE = 0.00048 ether;
 
     event Purchase(uint256 beersAmount, address buyerAddress, uint256 tips);
 
