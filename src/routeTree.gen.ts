@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LayoutRouteRouteImport } from './routes/_layout/route'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
-import { Route as LayoutOrdersRouteImport } from './routes/_layout/orders'
+import { Route as LayoutTokensRouteImport } from './routes/_layout/tokens'
 import { Route as LayoutAboutRouteImport } from './routes/_layout/about'
 import { Route as Layout404RouteImport } from './routes/_layout/404'
 
@@ -24,9 +24,9 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRouteRoute,
 } as any)
-const LayoutOrdersRoute = LayoutOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
+const LayoutTokensRoute = LayoutTokensRouteImport.update({
+  id: '/tokens',
+  path: '/tokens',
   getParentRoute: () => LayoutRouteRoute,
 } as any)
 const LayoutAboutRoute = LayoutAboutRouteImport.update({
@@ -44,12 +44,12 @@ export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/404': typeof Layout404Route
   '/about': typeof LayoutAboutRoute
-  '/orders': typeof LayoutOrdersRoute
+  '/tokens': typeof LayoutTokensRoute
 }
 export interface FileRoutesByTo {
   '/404': typeof Layout404Route
   '/about': typeof LayoutAboutRoute
-  '/orders': typeof LayoutOrdersRoute
+  '/tokens': typeof LayoutTokensRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
@@ -57,20 +57,20 @@ export interface FileRoutesById {
   '/_layout': typeof LayoutRouteRouteWithChildren
   '/_layout/404': typeof Layout404Route
   '/_layout/about': typeof LayoutAboutRoute
-  '/_layout/orders': typeof LayoutOrdersRoute
+  '/_layout/tokens': typeof LayoutTokensRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/404' | '/about' | '/orders'
+  fullPaths: '/' | '/404' | '/about' | '/tokens'
   fileRoutesByTo: FileRoutesByTo
-  to: '/404' | '/about' | '/orders' | '/'
+  to: '/404' | '/about' | '/tokens' | '/'
   id:
     | '__root__'
     | '/_layout'
     | '/_layout/404'
     | '/_layout/about'
-    | '/_layout/orders'
+    | '/_layout/tokens'
     | '/_layout/'
   fileRoutesById: FileRoutesById
 }
@@ -94,11 +94,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRouteRoute
     }
-    '/_layout/orders': {
-      id: '/_layout/orders'
-      path: '/orders'
-      fullPath: '/orders'
-      preLoaderRoute: typeof LayoutOrdersRouteImport
+    '/_layout/tokens': {
+      id: '/_layout/tokens'
+      path: '/tokens'
+      fullPath: '/tokens'
+      preLoaderRoute: typeof LayoutTokensRouteImport
       parentRoute: typeof LayoutRouteRoute
     }
     '/_layout/about': {
@@ -121,14 +121,14 @@ declare module '@tanstack/react-router' {
 interface LayoutRouteRouteChildren {
   Layout404Route: typeof Layout404Route
   LayoutAboutRoute: typeof LayoutAboutRoute
-  LayoutOrdersRoute: typeof LayoutOrdersRoute
+  LayoutTokensRoute: typeof LayoutTokensRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteRouteChildren: LayoutRouteRouteChildren = {
   Layout404Route: Layout404Route,
   LayoutAboutRoute: LayoutAboutRoute,
-  LayoutOrdersRoute: LayoutOrdersRoute,
+  LayoutTokensRoute: LayoutTokensRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 

@@ -38,7 +38,7 @@ const NAVIGATION: Navigation = [
     icon: <DashboardIcon />,
   },
   {
-    segment: "orders",
+    segment: "tokens",
     title: "Get Tokens",
     icon: <TokenIcon />,
   },
