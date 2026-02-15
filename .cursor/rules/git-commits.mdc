@@ -1,0 +1,11 @@
+---
+description: Git commit message style
+alwaysApply: true
+---
+
+# Git Commits
+
+- Commit messages must be short, one line, like a human would write
+- No bullet lists, no multi-line descriptions
+- Example: `fix: loading spinner on registration check`
+- Example: `add: 0x prefix for stealth address display`

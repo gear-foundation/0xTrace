@@ -22,6 +22,34 @@ export function generateMnemonicExtended() {
   };
 }
 
+export function validateMnemonic(mnemonic: string): { valid: boolean; error?: string } {
+  const words = mnemonic.trim().split(/\s+/);
+  if (words.length !== 12) {
+    return { valid: false, error: `Expected 12 words, got ${words.length}` };
+  }
+  const invalidWords = words.filter((w) => !english.includes(w));
+  if (invalidWords.length > 0) {
+    return { valid: false, error: `Invalid word(s): ${invalidWords.join(", ")}` };
+  }
+  try {
+    mnemonicToAccount(mnemonic.trim());
+    return { valid: true };
+  } catch {
+    return { valid: false, error: "Invalid mnemonic checksum" };
+  }
+}
+
+export function deriveKeysFromMnemonic(mnemonic: string) {
+  const account = mnemonicToAccount(mnemonic.trim());
+  const privateKeyBuf = account.getHdKey().privateKey;
+  if (!privateKeyBuf) {
+    throw new Error("No private key derived from mnemonic");
+  }
+  const privateKey = toHex(privateKeyBuf);
+  const publicKey = toHex(secp256k1.getPublicKey(privateKey.slice(2), true));
+  return { privateKey, publicKey };
+}
+
 export function generateNewStealthAddress() {
   const spend = generateMnemonicExtended();
   const view = generateMnemonicExtended();
@@ -108,6 +136,12 @@ export function checkStealthAddress(
 
   const viewTag = toHex(sharedSecretXHashed.slice(0, 1));
 
+  console.log("[checkStealthAddress] View tag check:", {
+    computed: viewTag,
+    expected: expectedViewTagHex,
+    match: expectedViewTagHex === viewTag,
+  });
+
   if (expectedViewTagHex !== viewTag) {
     return false;
   }
@@ -126,7 +160,15 @@ export function checkStealthAddress(
     stealthAddress = blake2AsHex(stealthPublicKeyCompressed) as Hex;
   }
 
-  return expectedStealthAddress === stealthAddress;
+  const match = expectedStealthAddress.toLowerCase() === stealthAddress.toLowerCase();
+
+  console.log("[checkStealthAddress] Address check:", {
+    computed: stealthAddress,
+    expected: expectedStealthAddress,
+    match,
+  });
+
+  return match;
 }
 
 export function computeStealthKey(
@@ -154,7 +196,7 @@ export function computeStealthKey(
     stealthAddress = blake2AsHex(stealthPublicKeyCompressed) as Hex;
   }
 
-  if (stealthAddress !== expectedStealthAddress) {
+  if (stealthAddress.toLowerCase() !== expectedStealthAddress.toLowerCase()) {
     throw new Error("Computed stealth private key does not match expected stealth address");
   }
 

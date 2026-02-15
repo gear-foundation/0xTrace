@@ -1,5 +1,6 @@
 import { GearApi } from "@gear-js/api";
 import { createContext, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { connectVara } from "@/vara/connection";
 
 export type VaraAccount = {
   address: string;
@@ -22,6 +23,7 @@ type VaraAccountContextType = {
   tokenSymbol: string;
   isConnected: boolean;
   isReady: boolean;
+  api: GearApi | null;
   connectWallet: (walletId: string) => Promise<VaraAccount[]>;
   selectAccount: (account: VaraAccount) => void;
   disconnect: () => void;
@@ -29,7 +31,6 @@ type VaraAccountContextType = {
 
 const STORAGE_WALLET_KEY = "vara-wallet-id";
 const STORAGE_ACCOUNT_KEY = "vara-account-address";
-const VARA_RPC = import.meta.env.VITE_VARA_RPC as string;
 const VARA_DECIMALS = 12;
 
 const KNOWN_WALLETS: Record<string, string> = {
@@ -46,6 +47,7 @@ export const VaraAccountContext = createContext<VaraAccountContextType>({
   tokenSymbol: "VARA",
   isConnected: false,
   isReady: false,
+  api: null,
   connectWallet: async () => [],
   selectAccount: () => {},
   disconnect: () => {},
@@ -71,7 +73,7 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
   const [balance, setBalance] = useState<string | null>(null);
   const [tokenSymbol, setTokenSymbol] = useState("VARA");
   const [isReady, setIsReady] = useState(false);
-  const apiRef = useRef<GearApi | null>(null);
+  const [api, setApi] = useState<GearApi | null>(null);
   const unsubRef = useRef<(() => void) | null>(null);
 
   const detectWallets = useCallback(() => {
@@ -131,6 +133,12 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    connectVara()
+      .then((instance) => setApi(instance))
+      .catch((err) => console.error("Failed to connect to Vara:", err));
+  }, []);
+
+  useEffect(() => {
     const init = async () => {
       await new Promise((r) => setTimeout(r, 300));
       detectWallets();
@@ -155,7 +163,7 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
   }, [connectWallet, detectWallets]);
 
   useEffect(() => {
-    if (!account) {
+    if (!account || !api) {
       setBalance(null);
       return;
     }
@@ -164,11 +172,6 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
 
     const fetchBalance = async () => {
       try {
-        if (!apiRef.current) {
-          apiRef.current = await GearApi.create({ providerAddress: VARA_RPC });
-        }
-        const api = apiRef.current;
-
         const symbols = api.registry.chainTokens;
         const chainDecimals = api.registry.chainDecimals;
         if (symbols[0] && !cancelled) setTokenSymbol(symbols[0]);
@@ -199,16 +202,8 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
         unsubRef.current = null;
       }
     };
-  }, [account]);
+  }, [account, api]);
 
-  useEffect(() => {
-    return () => {
-      if (apiRef.current) {
-        apiRef.current.disconnect();
-        apiRef.current = null;
-      }
-    };
-  }, []);
 
   const value = useMemo(
     () => ({
@@ -218,11 +213,12 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
       tokenSymbol,
       isConnected: !!account,
       isReady,
+      api,
       connectWallet,
       selectAccount,
       disconnect,
     }),
-    [wallets, account, balance, tokenSymbol, isReady, connectWallet, selectAccount, disconnect],
+    [wallets, account, balance, tokenSymbol, isReady, api, connectWallet, selectAccount, disconnect],
   );
 
   return <VaraAccountContext.Provider value={value}>{children}</VaraAccountContext.Provider>;

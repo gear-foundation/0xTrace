@@ -1,143 +1,44 @@
-import AutorenewIcon from "@mui/icons-material/Autorenew";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import HowToRegIcon from "@mui/icons-material/HowToReg";
-import Alert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
+import CallMadeIcon from "@mui/icons-material/CallMade";
+import CallReceivedIcon from "@mui/icons-material/CallReceived";
+import SearchIcon from "@mui/icons-material/Search";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import TextField from "@mui/material/TextField";
-import { useAppKitAccount } from "@reown/appkit/react";
-import { useCallback, useMemo, useState } from "react";
-import { useWriteContract } from "wagmi";
-import { abi as ERC6538RegistryAbi, address as ERC6538RegistryAddress } from "@/contracts/ERC6538Registry";
-import { generateNewStealthAddress } from "@/cryptography/StealthAddresses";
-import { useAlert } from "@/hooks/useAlert";
-import { useVaraAccount } from "@/hooks/useVaraAccount";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import { useNavigate, useSearch } from "@tanstack/react-router";
+import { ClaimTab } from "./dashboard/ClaimTab";
+import { ReceiveTab } from "./dashboard/ReceiveTab";
+import { SendTab } from "./dashboard/SendTab";
 
-function FieldRow({ label, value, onCopy }: { label: string; value: string; onCopy: () => void }) {
-  return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1 }}>
-      <TextField
-        fullWidth
-        label={label}
-        value={value}
-        slotProps={{
-          input: {
-            readOnly: true,
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={onCopy} edge="end" size="small" aria-label={`copy ${label}`}>
-                  <ContentCopyIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-      />
-    </Box>
-  );
-}
+const TAB_KEYS = ["receive", "send", "claim"] as const;
 
 export default function DashboardPage() {
-  const { isConnected: isEthereumConnected } = useAppKitAccount();
-  const { isConnected: isVaraConnected } = useVaraAccount();
-  const { writeContract } = useWriteContract();
-  const alert = useAlert();
-  const canRegister = isEthereumConnected && isVaraConnected;
+  const { tab } = useSearch({ from: "/_layout/" });
+  const navigate = useNavigate({ from: "/" });
 
-  const [keys, setKeys] = useState(() => generateNewStealthAddress());
-  const { spend, view, stealthAddressHex, stealthAddress } = keys;
+  const tabIndex = Math.max(0, TAB_KEYS.indexOf(tab ?? "receive"));
 
-  const copyToClipboard = useCallback(
-    async (text: string) => {
-      try {
-        await navigator.clipboard.writeText(text);
-        alert.success("Copied!");
-      } catch {
-        alert.error("Failed to copy");
-      }
-    },
-    [alert],
-  );
-
-  const handleCopyStealth = useCallback(() => copyToClipboard(stealthAddress), [copyToClipboard, stealthAddress]);
-  const handleCopySpend = useCallback(() => copyToClipboard(spend.mnemonic), [copyToClipboard, spend.mnemonic]);
-  const handleCopyView = useCallback(() => copyToClipboard(view.mnemonic), [copyToClipboard, view.mnemonic]);
-
-  const formatBackupText = useCallback(() => {
-    return [
-      "Backup of Stealth Wallet:",
-      `Stealth meta-address: ${stealthAddress}`,
-      `Spend mnemonic: ${spend.mnemonic}`,
-      `View mnemonic: ${view.mnemonic}`,
-      "",
-    ].join("\n");
-  }, [stealthAddress, spend.mnemonic, view.mnemonic]);
-
-  const handleBackup = useCallback(() => copyToClipboard(formatBackupText()), [copyToClipboard, formatBackupText]);
-
-  const handleGenerate = useCallback(() => {
-    setKeys(generateNewStealthAddress());
-  }, []);
-
-  const handleRegister = useCallback(() => {
-    if (!isEthereumConnected && !isVaraConnected) {
-      alert.warning("Please connect your Ethereum and VARA wallets before registering.");
-      return;
-    }
-
-    if (!isEthereumConnected) {
-      alert.warning("Please connect your Ethereum wallet before registering.");
-      return;
-    }
-
-    if (!isVaraConnected) {
-      alert.warning("Please connect your VARA wallet before registering.");
-      return;
-    }
-
-    writeContract({
-      abi: ERC6538RegistryAbi,
-      address: ERC6538RegistryAddress,
-      functionName: "registerKeys",
-      args: [1n, stealthAddressHex],
-    });
-  }, [isEthereumConnected, isVaraConnected, writeContract, stealthAddressHex, alert]);
-
-  const fields = useMemo(
-    () => [
-      { label: "Stealth meta-address", value: stealthAddress, onCopy: handleCopyStealth },
-      { label: "Spend mnemonic", value: spend.mnemonic, onCopy: handleCopySpend },
-      { label: "View mnemonic", value: view.mnemonic, onCopy: handleCopyView },
-    ],
-    [stealthAddress, spend.mnemonic, view.mnemonic, handleCopyStealth, handleCopySpend, handleCopyView],
-  );
+  const handleTabChange = (_: unknown, newValue: number) => {
+    navigate({ search: { tab: TAB_KEYS[newValue] }, replace: true });
+  };
 
   return (
     <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
-      <Alert severity="warning" sx={{ px: 1 }}>
-        <AlertTitle>Important</AlertTitle>
-        Backup both 12-word mnemonics (24 words total). You will need them to access your wallet.
-      </Alert>
+      <Tabs
+        value={tabIndex}
+        onChange={handleTabChange}
+        variant="fullWidth"
+        TabIndicatorProps={{ sx: { bgcolor: "#9cef3b" } }}
+        sx={{ "& .Mui-selected": { color: "#9cef3b !important" } }}
+      >
+        <Tab icon={<CallReceivedIcon />} label="Receive" iconPosition="start" />
+        <Tab icon={<CallMadeIcon />} label="Send" iconPosition="start" />
+        <Tab icon={<SearchIcon />} label="Claim" iconPosition="start" />
+      </Tabs>
 
-      {fields.map(({ label, value, onCopy }) => (
-        <FieldRow key={label} label={label} value={value} onCopy={onCopy} />
-      ))}
-
-      <Box sx={{ display: "flex", justifyContent: { xs: "center", md: "flex-end" }, gap: 1 }}>
-        <Button variant="outlined" onClick={handleGenerate} startIcon={<AutorenewIcon />}>
-          Generate
-        </Button>
-
-        <Button variant="outlined" onClick={handleBackup} startIcon={<ContentCopyIcon />}>
-          Backup
-        </Button>
-
-        <Button variant="outlined" onClick={handleRegister} startIcon={<HowToRegIcon />} disabled={!canRegister}>
-          Register
-        </Button>
+      <Box sx={{ pt: 1 }}>
+        {tabIndex === 0 && <ReceiveTab />}
+        {tabIndex === 1 && <SendTab />}
+        {tabIndex === 2 && <ClaimTab />}
       </Box>
     </Box>
   );
