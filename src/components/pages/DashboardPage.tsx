@@ -76,6 +76,7 @@ function ReceiveTab() {
 
   const canRegister = isEthereumConnected && isVaraConnected && registryReady;
   const isAlreadyRegistered = !!registeredAddress;
+  const isLoading = checkingState || (isEthereumConnected && !registryReady);
 
   useEffect(() => {
     if (!ethAddress || !registryReady) {
@@ -160,23 +161,23 @@ function ReceiveTab() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {checkingState && (
+      {isLoading && (
         <Alert severity="info" icon={<CircularProgress size={18} />}>
           Checking registration state...
         </Alert>
       )}
 
-      {!checkingState && isAlreadyRegistered && (
+      {!isLoading && isAlreadyRegistered && (
         <Alert severity="success">
           <AlertTitle>Already Registered</AlertTitle>
           Your Ethereum address is registered on Vara with stealth meta-address:
           <Typography variant="caption" component="div" sx={{ mt: 0.5, fontFamily: "monospace", wordBreak: "break-all" }}>
-            {registeredAddress}
+            {registeredAddress?.startsWith("0x") ? registeredAddress : `0x${registeredAddress}`}
           </Typography>
         </Alert>
       )}
 
-      {!checkingState && !isAlreadyRegistered && (
+      {!isLoading && !isAlreadyRegistered && (
         <Alert severity="warning">
           <AlertTitle>Important</AlertTitle>
           Backup both 12-word mnemonics (24 words total). You will need them to access your wallet.
