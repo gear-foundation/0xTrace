@@ -8,7 +8,12 @@ export function FieldRow({
   value,
   placeholder,
   onCopy,
-}: { label: string; value: string; placeholder?: string; onCopy: () => void }) {
+}: {
+  label: string;
+  value: string;
+  placeholder?: string;
+  onCopy: () => void;
+}) {
   return (
     <TextField
       fullWidth

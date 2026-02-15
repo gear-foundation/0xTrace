@@ -21,9 +21,9 @@ import {
   deriveKeysFromMnemonic,
   validateMnemonic,
 } from "@/cryptography/StealthAddresses";
-import { accentBtnSx } from "@/theme/styles";
 import { useAlert } from "@/hooks/useAlert";
 import { useAnnouncerService } from "@/hooks/useAnnouncerService";
+import { accentBtnSx } from "@/theme/styles";
 
 type ClaimResult = {
   stealthAddress: string;
@@ -94,12 +94,14 @@ export function ClaimTab() {
 
         for (const ann of announcements) {
           // Handle both array and string formats
-          const ephemeralHex = (typeof ann.ephemeral_pub_key === "string"
-            ? ann.ephemeral_pub_key
-            : `0x${Buffer.from(ann.ephemeral_pub_key).toString("hex")}`) as `0x${string}`;
-          const viewTagHex = (typeof ann.metadata === "string"
-            ? ann.metadata
-            : `0x${Buffer.from(ann.metadata).toString("hex")}`) as `0x${string}`;
+          const ephemeralHex = (
+            typeof ann.ephemeral_pub_key === "string"
+              ? ann.ephemeral_pub_key
+              : `0x${Buffer.from(ann.ephemeral_pub_key).toString("hex")}`
+          ) as `0x${string}`;
+          const viewTagHex = (
+            typeof ann.metadata === "string" ? ann.metadata : `0x${Buffer.from(ann.metadata).toString("hex")}`
+          ) as `0x${string}`;
           const chain: Chain = ann.chain === "Ethereum" ? "eth" : "vara";
           const stealthAddr = ann.stealth_address.startsWith("0x")
             ? (ann.stealth_address as `0x${string}`)

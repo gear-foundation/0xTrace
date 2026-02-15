@@ -54,7 +54,7 @@ export function useRegistryService() {
       const result = await tx.signAndSend();
       return result;
     },
-    [account],
+    [account, getSigner],
   );
 
   const stealthMetaAddressOf = useCallback(

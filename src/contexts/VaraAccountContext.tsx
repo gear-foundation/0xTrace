@@ -1,4 +1,4 @@
-import { GearApi } from "@gear-js/api";
+import type { GearApi } from "@gear-js/api";
 import { createContext, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { connectVara } from "@/vara/connection";
 
@@ -203,7 +203,6 @@ export function VaraAccountProvider({ children }: { children: ReactNode }) {
       }
     };
   }, [account, api]);
-
 
   const value = useMemo(
     () => ({

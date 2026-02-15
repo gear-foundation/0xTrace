@@ -1,8 +1,8 @@
 import { GearApi } from "@gear-js/api";
 import { Sails } from "sails-js";
 import { SailsIdlParser } from "sails-js-parser";
-import registryIdl from "@/vara/registry.idl?raw";
 import announcerIdl from "@/vara/announcer.idl?raw";
+import registryIdl from "@/vara/registry.idl?raw";
 
 const VARA_RPC = import.meta.env.VITE_VARA_RPC as string;
 const REGISTRY_PROGRAM_ID = import.meta.env.VITE_VARA_REGISTRY_PROGRAM_ID as `0x${string}`;
@@ -16,7 +16,6 @@ let registrySailsPromise: Promise<Sails> | null = null;
 
 let announcerSails: Sails | null = null;
 let announcerSailsPromise: Promise<Sails> | null = null;
-
 
 export function connectVara(): Promise<GearApi> {
   if (apiInstance) return Promise.resolve(apiInstance);
@@ -53,7 +52,6 @@ export function getRegistrySails(): Promise<Sails> {
 
   return registrySailsPromise;
 }
-
 
 export function getAnnouncerSails(): Promise<Sails> {
   if (announcerSails) return Promise.resolve(announcerSails);

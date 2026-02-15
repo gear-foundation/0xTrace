@@ -10,10 +10,10 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { generateNewStealthAddress } from "@/cryptography/StealthAddresses";
-import { accentBtnSx } from "@/theme/styles";
 import { useAlert } from "@/hooks/useAlert";
 import { useRegistryService } from "@/hooks/useRegistryService";
 import { useVaraAccount } from "@/hooks/useVaraAccount";
+import { accentBtnSx } from "@/theme/styles";
 import { FieldRow } from "./FieldRow";
 
 export function ReceiveTab() {
@@ -126,7 +126,11 @@ export function ReceiveTab() {
         <Alert severity="success">
           <AlertTitle>Already Registered</AlertTitle>
           Your Ethereum address is registered on Vara with stealth meta-address:
-          <Typography variant="caption" component="div" sx={{ mt: 0.5, fontFamily: "monospace", wordBreak: "break-all" }}>
+          <Typography
+            variant="caption"
+            component="div"
+            sx={{ mt: 0.5, fontFamily: "monospace", wordBreak: "break-all" }}
+          >
             {registeredAddress?.startsWith("0x") ? registeredAddress : `0x${registeredAddress}`}
           </Typography>
         </Alert>
@@ -139,7 +143,12 @@ export function ReceiveTab() {
         </Alert>
       )}
 
-      <FieldRow label="Stealth meta-address" value={stealthAddress} placeholder="st:eth:0x..." onCopy={handleCopyStealth} />
+      <FieldRow
+        label="Stealth meta-address"
+        value={stealthAddress}
+        placeholder="st:eth:0x..."
+        onCopy={handleCopyStealth}
+      />
       <FieldRow label="Spend mnemonic" value={spend.mnemonic} placeholder="12 words" onCopy={handleCopySpend} />
       <FieldRow label="View mnemonic" value={view.mnemonic} placeholder="12 words" onCopy={handleCopyView} />
 

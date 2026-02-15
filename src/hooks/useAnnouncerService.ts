@@ -53,9 +53,10 @@ export function useAnnouncerService() {
         caller: announcement.caller,
         ephemeral_pub_key: announcement.ephemeral_pub_key,
         ephemeral_pub_key_type: typeof announcement.ephemeral_pub_key,
-        ephemeral_pub_key_length: typeof announcement.ephemeral_pub_key === "string"
-          ? (announcement.ephemeral_pub_key.replace(/^0x/, "").length / 2) + " bytes (hex)"
-          : (announcement.ephemeral_pub_key as number[]).length + " bytes (array)",
+        ephemeral_pub_key_length:
+          typeof announcement.ephemeral_pub_key === "string"
+            ? `${announcement.ephemeral_pub_key.replace(/^0x/, "").length / 2} bytes (hex)`
+            : `${(announcement.ephemeral_pub_key as number[]).length} bytes (array)`,
         metadata: announcement.metadata,
         metadata_type: typeof announcement.metadata,
         chain: announcement.chain,
@@ -66,7 +67,7 @@ export function useAnnouncerService() {
       const result = await tx.signAndSend();
       return result;
     },
-    [account],
+    [account, getSigner],
   );
 
   const getAnnouncements = useCallback(

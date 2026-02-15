@@ -8,6 +8,8 @@ type DashboardSearch = {
 export const Route = createFileRoute("/_layout/")({
   component: DashboardPage,
   validateSearch: (search: Record<string, unknown>): DashboardSearch => ({
-    tab: (["receive", "send", "claim"].includes(search.tab as string) ? search.tab : "receive") as DashboardSearch["tab"],
+    tab: (["receive", "send", "claim"].includes(search.tab as string)
+      ? search.tab
+      : "receive") as DashboardSearch["tab"],
   }),
 });

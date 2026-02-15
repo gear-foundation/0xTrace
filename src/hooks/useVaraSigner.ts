@@ -1,5 +1,5 @@
-import { useCallback } from "react";
 import type { Signer } from "@polkadot/api/types";
+import { useCallback } from "react";
 import { useVaraAccount } from "./useVaraAccount";
 
 export function useVaraSigner() {

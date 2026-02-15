@@ -20,26 +20,26 @@ Yet another ERC-5564 (Stealth Addresses) wallet, but with storage on Vara Networ
 ### Installing
 
 ```bash
-npm install
+yarn install
 ```
 
 ### Linting
 
 ```bash
-npm run lint
-npm run lint:fix
+yarn run lint
+yarn run lint:fix
 ```
 
 ### Building
 
 ```bash
 cp .env.test .env
-npm run build
+yarn run build
 ```
 
 ### Running
 
 ```bash
 cp .env.test .env
-npm run dev
+yarn run dev
 ```

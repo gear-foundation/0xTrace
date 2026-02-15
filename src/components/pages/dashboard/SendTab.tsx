@@ -25,14 +25,14 @@ import { useAppKitAccount } from "@reown/appkit/react";
 import { useCallback, useEffect, useState } from "react";
 import { parseEther } from "viem";
 import { useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
-import { type Chain, generateStealthAddress } from "@/cryptography/StealthAddresses";
 import { ETH_EXPLORER, VARA_DECIMALS, VARA_EXPLORER } from "@/constants";
-import { accentBtnSx, chainToggleSx } from "@/theme/styles";
+import { type Chain, generateStealthAddress } from "@/cryptography/StealthAddresses";
 import { useAlert } from "@/hooks/useAlert";
 import { useAnnouncerService } from "@/hooks/useAnnouncerService";
 import { useRegistryService } from "@/hooks/useRegistryService";
 import { useVaraAccount } from "@/hooks/useVaraAccount";
 import { useVaraSigner } from "@/hooks/useVaraSigner";
+import { accentBtnSx, chainToggleSx } from "@/theme/styles";
 
 function isValidEthAddress(addr: string) {
   return /^0x[0-9a-fA-F]{40}$/.test(addr);
@@ -125,7 +125,7 @@ export function SendTab() {
     setTransferTxHash(null);
     setTransferDone(false);
     setAnnounceDone(false);
-  }, [chain]);
+  }, []);
 
   const handleComputeStealth = useCallback(() => {
     if (!metaAddress) {
@@ -191,7 +191,19 @@ export function SendTab() {
     } finally {
       setTransferLoading(false);
     }
-  }, [stealthResult, amount, chain, isEthereumConnected, senderEthAddress, sendTransactionAsync, isVaraConnected, varaAccount, varaApi, getSigner, alert]);
+  }, [
+    stealthResult,
+    amount,
+    chain,
+    isEthereumConnected,
+    senderEthAddress,
+    sendTransactionAsync,
+    isVaraConnected,
+    varaAccount,
+    varaApi,
+    getSigner,
+    alert,
+  ]);
 
   const handleAnnounce = useCallback(async () => {
     if (!stealthResult || !senderEthAddress) return;
@@ -223,8 +235,8 @@ export function SendTab() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Typography variant="body2" color="text.secondary">
-        Send tokens privately. Look up the recipient's stealth meta-address, compute a one-time stealth address, transfer
-        tokens, then announce on Vara.
+        Send tokens privately. Look up the recipient's stealth meta-address, compute a one-time stealth address,
+        transfer tokens, then announce on Vara.
       </Typography>
 
       <TextField
@@ -298,9 +310,27 @@ export function SendTab() {
               </Step>
             </Stepper>
 
-            <TextField fullWidth size="small" label="Stealth address" value={stealthResult.stealthAddress} slotProps={{ input: { readOnly: true } }} />
-            <TextField fullWidth size="small" label="Ephemeral public key" value={stealthResult.ephemeralPublicKey} slotProps={{ input: { readOnly: true } }} />
-            <TextField fullWidth size="small" label="View tag" value={stealthResult.viewTag} slotProps={{ input: { readOnly: true } }} />
+            <TextField
+              fullWidth
+              size="small"
+              label="Stealth address"
+              value={stealthResult.stealthAddress}
+              slotProps={{ input: { readOnly: true } }}
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="Ephemeral public key"
+              value={stealthResult.ephemeralPublicKey}
+              slotProps={{ input: { readOnly: true } }}
+            />
+            <TextField
+              fullWidth
+              size="small"
+              label="View tag"
+              value={stealthResult.viewTag}
+              slotProps={{ input: { readOnly: true } }}
+            />
 
             {!transferDone && (
               <>
@@ -327,7 +357,11 @@ export function SendTab() {
                   variant="outlined"
                   onClick={handleTransfer}
                   startIcon={transferLoading ? <CircularProgress size={16} /> : <SendIcon />}
-                  disabled={transferLoading || !isValidAmount(amount) || (chain === "eth" ? !isEthereumConnected : !isVaraConnected)}
+                  disabled={
+                    transferLoading ||
+                    !isValidAmount(amount) ||
+                    (chain === "eth" ? !isEthereumConnected : !isVaraConnected)
+                  }
                   sx={accentBtnSx}
                 >
                   {transferLoading ? "Sending..." : `Transfer ${tokenSymbol}`}
@@ -336,9 +370,17 @@ export function SendTab() {
             )}
 
             {transferTxHash && (
-              <Alert severity={transferDone ? "success" : "info"} icon={transferDone ? <CheckCircleIcon /> : <CircularProgress size={18} />}>
+              <Alert
+                severity={transferDone ? "success" : "info"}
+                icon={transferDone ? <CheckCircleIcon /> : <CircularProgress size={18} />}
+              >
                 <AlertTitle>{transferDone ? "Transfer confirmed" : "Waiting for confirmation..."}</AlertTitle>
-                <Link href={explorerUrl!} target="_blank" rel="noopener" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                <Link
+                  href={explorerUrl!}
+                  target="_blank"
+                  rel="noopener"
+                  sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}
+                >
                   {`${transferTxHash.slice(0, 10)}...${transferTxHash.slice(-8)}`}
                   <OpenInNewIcon sx={{ fontSize: 14 }} />
                 </Link>
