@@ -46,12 +46,8 @@ impl RegistryService<'_> {
         ethereum_address: H160,
         stealth_meta_address: StealthMetaAddress,
     ) {
-        let Some(stealth_meta_address_stripped) = stealth_meta_address.strip_prefix("0x") else {
-            panic!("Stealth meta address must be 0x-prefixed hex string")
-        };
-
         let mut buffer: [u8; 66] = [0; 66];
-        if hex::decode_to_slice(stealth_meta_address_stripped, &mut buffer).is_err() {
+        if hex::decode_to_slice(&stealth_meta_address, &mut buffer).is_err() {
             panic!("Stealth meta address must be valid [u8; 66] array encoded as hex string");
         };
 

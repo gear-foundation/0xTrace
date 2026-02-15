@@ -22,7 +22,7 @@ async fn test_registry() {
 
     let ethereum_address = H160::random();
     let stealth_meta_address = [0xff; 66];
-    let stealth_meta_address_hex = format!("0x{}", hex::encode(stealth_meta_address));
+    let stealth_meta_address_hex = hex::encode(stealth_meta_address);
 
     registry_service_client
         .register_keys(ethereum_address, stealth_meta_address_hex.clone())
