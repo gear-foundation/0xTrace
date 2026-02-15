@@ -1,5 +1,9 @@
 #![no_std]
 
+use k256::{
+    AffinePoint, EncodedPoint,
+    elliptic_curve::{group::prime::PrimeCurveAffine, sec1::FromEncodedPoint},
+};
 use sails_rs::{H160, cell::RefCell, collections::HashMap, hex, prelude::*};
 
 type StealthMetaAddress = String;
@@ -50,6 +54,37 @@ impl RegistryService<'_> {
         if hex::decode_to_slice(&stealth_meta_address, &mut buffer).is_err() {
             panic!("Stealth meta address must be valid [u8; 66] array encoded as hex string");
         };
+
+        let Some((spend_pub_key, view_pub_key)) = buffer.split_at_checked(33) else {
+            panic!("Stealth meta address must be exactly 66 bytes when decoded from hex");
+        };
+
+        let spend_pub_key_buf_result: Result<[u8; 33], _> = spend_pub_key.try_into();
+        let spend_pub_key_buf =
+            spend_pub_key_buf_result.expect("spend_pub_key must be 33 bytes long");
+        let encoded_point = EncodedPoint::from_bytes(spend_pub_key_buf)
+            .expect("spend_pub_key is not valid encoded point");
+        match Option::<AffinePoint>::from(AffinePoint::from_encoded_point(&encoded_point)) {
+            Some(point) => {
+                if point.is_identity().into() {
+                    panic!("spend_pub_key cannot be identity point");
+                }
+            }
+            None => panic!("spend_pub_key is not valid point"),
+        }
+
+        let view_pub_key_buf_result: Result<[u8; 33], _> = view_pub_key.try_into();
+        let view_pub_key_buf = view_pub_key_buf_result.expect("view_pub_key must be 33 bytes long");
+        let encoded_point = EncodedPoint::from_bytes(view_pub_key_buf)
+            .expect("view_pub_key is not valid encoded point");
+        match Option::<AffinePoint>::from(AffinePoint::from_encoded_point(&encoded_point)) {
+            Some(point) => {
+                if point.is_identity().into() {
+                    panic!("view_pub_key cannot be identity point");
+                }
+            }
+            None => panic!("view_pub_key is not valid point"),
+        }
 
         // TODO: recover ethereum address from signature instead of accepting it as an argument
         self.data
