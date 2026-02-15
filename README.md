@@ -16,6 +16,8 @@ Yet another ERC-5564 (Stealth Addresses) wallet, but with storage on Vara Networ
   Network.
 - **registry**: [registry](./contracts/registry) is the program responsible for storing stealth addresses on Vara
   Network.
+- **beer-market**: [beer-market](./contracts/beer-market) is a simple contract that demonstrates how to hide user
+  behavior on the blockchain (for example, we want to hide the fact that someone buys beer on Friday).
 
 ### Installing
 

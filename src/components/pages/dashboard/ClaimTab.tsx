@@ -14,8 +14,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import { Keyring } from "@polkadot/api";
 import { useCallback, useState } from "react";
-import { checksumAddress, type Hex } from "viem";
+import { checksumAddress, fromHex, type Hex, toHex } from "viem";
 import {
   type Chain,
   checkStealthAddress,
@@ -176,6 +177,13 @@ export function ClaimTab() {
 
   const handleCopyPrivateKey = useCallback(
     async (key: string) => {
+      const keyring = new Keyring({ type: "ecdsa", ss58Format: 137 });
+      const pair = keyring.addFromSeed(fromHex(key as Hex, { size: 32, to: "bytes" }));
+      console.log(JSON.stringify(pair.toJson("1")));
+      console.log(pair.address);
+      console.log(toHex(pair.addressRaw));
+
+      console.log(key);
       try {
         await navigator.clipboard.writeText(key);
         setCopiedKey(key);

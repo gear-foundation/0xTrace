@@ -222,7 +222,7 @@ export function SendTab() {
           stealthResult.chain === "eth"
             ? `0x${"00".repeat(12)}${stealthResult.stealthAddress.slice(2)}`
             : stealthResult.stealthAddress,
-        caller: stealthResult.chain === "eth" ? `0x${"00".repeat(12)}${senderEthAddress.slice(2)}` : senderEthAddress,
+        caller: `0x${"00".repeat(12)}${senderEthAddress.slice(2)}`,
         ephemeral_pub_key: stealthResult.ephemeralPublicKey,
         metadata: stealthResult.viewTag,
         chain: stealthResult.chain === "eth" ? "Ethereum" : "Vara",
