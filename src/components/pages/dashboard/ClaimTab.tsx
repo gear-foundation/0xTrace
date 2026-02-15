@@ -93,8 +93,13 @@ export function ClaimTab() {
         console.log(`[ClaimTab] Batch ${offset}-${offset + limit}:`, announcements);
 
         for (const ann of announcements) {
-          const ephemeralHex = `0x${Buffer.from(ann.ephemeral_pub_key).toString("hex")}` as `0x${string}`;
-          const viewTagHex = `0x${Buffer.from(ann.metadata).toString("hex")}` as `0x${string}`;
+          // Handle both array and string formats
+          const ephemeralHex = (typeof ann.ephemeral_pub_key === "string"
+            ? ann.ephemeral_pub_key
+            : `0x${Buffer.from(ann.ephemeral_pub_key).toString("hex")}`) as `0x${string}`;
+          const viewTagHex = (typeof ann.metadata === "string"
+            ? ann.metadata
+            : `0x${Buffer.from(ann.metadata).toString("hex")}`) as `0x${string}`;
           const chain: Chain = ann.chain === "Ethereum" ? "eth" : "vara";
           const stealthAddr = ann.stealth_address.startsWith("0x")
             ? (ann.stealth_address as `0x${string}`)

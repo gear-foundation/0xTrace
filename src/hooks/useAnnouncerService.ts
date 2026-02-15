@@ -7,8 +7,8 @@ import { useVaraSigner } from "./useVaraSigner";
 export type Announcement = {
   stealth_address: string;
   caller: string;
-  ephemeral_pub_key: number[];
-  metadata: number[];
+  ephemeral_pub_key: number[] | string;
+  metadata: number[] | string;
   chain: "Ethereum" | "Vara";
 };
 
