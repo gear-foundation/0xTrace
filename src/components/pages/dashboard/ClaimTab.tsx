@@ -21,7 +21,7 @@ import {
   deriveKeysFromMnemonic,
   validateMnemonic,
 } from "@/cryptography/StealthAddresses";
-import { accentBtnSx } from "@/constants";
+import { accentBtnSx } from "@/theme/styles";
 import { useAlert } from "@/hooks/useAlert";
 import { useAnnouncerService } from "@/hooks/useAnnouncerService";
 

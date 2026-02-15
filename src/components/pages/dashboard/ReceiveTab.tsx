@@ -10,7 +10,7 @@ import Typography from "@mui/material/Typography";
 import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { generateNewStealthAddress } from "@/cryptography/StealthAddresses";
-import { accentBtnSx } from "@/constants";
+import { accentBtnSx } from "@/theme/styles";
 import { useAlert } from "@/hooks/useAlert";
 import { useRegistryService } from "@/hooks/useRegistryService";
 import { useVaraAccount } from "@/hooks/useVaraAccount";
