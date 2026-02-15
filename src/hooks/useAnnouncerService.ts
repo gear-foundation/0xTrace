@@ -48,7 +48,18 @@ export function useAnnouncerService() {
 
       const signer = await getSigner();
       const sails = sailsRef.current;
-      console.log("[Announcer] announce args:", announcement);
+      console.log("[Announcer] announce payload:", {
+        stealth_address: announcement.stealth_address,
+        caller: announcement.caller,
+        ephemeral_pub_key: announcement.ephemeral_pub_key,
+        ephemeral_pub_key_type: typeof announcement.ephemeral_pub_key,
+        ephemeral_pub_key_length: typeof announcement.ephemeral_pub_key === "string"
+          ? (announcement.ephemeral_pub_key.replace(/^0x/, "").length / 2) + " bytes (hex)"
+          : (announcement.ephemeral_pub_key as number[]).length + " bytes (array)",
+        metadata: announcement.metadata,
+        metadata_type: typeof announcement.metadata,
+        chain: announcement.chain,
+      });
       const tx = sails.services.Announcer.functions.Announce(announcement);
       tx.withAccount(account.address, { signer });
       await tx.calculateGas();

@@ -201,18 +201,11 @@ export function SendTab() {
     }
     setAnnounceLoading(true);
     try {
-      const ephemeralBytes = Array.from(
-        Buffer.from(stealthResult.ephemeralPublicKey.replace(/^0x/, ""), "hex"),
-      );
-      const viewTagBytes = Array.from(
-        Buffer.from(stealthResult.viewTag.replace(/^0x/, ""), "hex"),
-      );
-
       await announce({
         stealth_address: stealthResult.stealthAddress,
         caller: senderEthAddress,
-        ephemeral_pub_key: ephemeralBytes,
-        metadata: viewTagBytes,
+        ephemeral_pub_key: stealthResult.ephemeralPublicKey,
+        metadata: stealthResult.viewTag,
         chain: stealthResult.chain === "eth" ? "Ethereum" : "Vara",
       });
 

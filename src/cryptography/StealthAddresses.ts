@@ -160,13 +160,15 @@ export function checkStealthAddress(
     stealthAddress = blake2AsHex(stealthPublicKeyCompressed) as Hex;
   }
 
+  const match = expectedStealthAddress.toLowerCase() === stealthAddress.toLowerCase();
+
   console.log("[checkStealthAddress] Address check:", {
     computed: stealthAddress,
     expected: expectedStealthAddress,
-    match: expectedStealthAddress === stealthAddress,
+    match,
   });
 
-  return expectedStealthAddress === stealthAddress;
+  return match;
 }
 
 export function computeStealthKey(
@@ -194,7 +196,7 @@ export function computeStealthKey(
     stealthAddress = blake2AsHex(stealthPublicKeyCompressed) as Hex;
   }
 
-  if (stealthAddress !== expectedStealthAddress) {
+  if (stealthAddress.toLowerCase() !== expectedStealthAddress.toLowerCase()) {
     throw new Error("Computed stealth private key does not match expected stealth address");
   }
 
