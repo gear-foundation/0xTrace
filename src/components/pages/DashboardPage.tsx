@@ -24,12 +24,15 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Tabs from "@mui/material/Tabs";
 import TextField from "@mui/material/TextField";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { type SyntheticEvent, useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { generateNewStealthAddress, generateStealthAddress } from "@/cryptography/StealthAddresses";
+import { type Chain, generateNewStealthAddress, generateStealthAddress } from "@/cryptography/StealthAddresses";
 import { useAlert } from "@/hooks/useAlert";
+import { useAnnouncerService } from "@/hooks/useAnnouncerService";
 import { useRegistryService } from "@/hooks/useRegistryService";
 import { useVaraAccount } from "@/hooks/useVaraAccount";
 
@@ -210,17 +213,21 @@ function ReceiveTab() {
 }
 
 function SendTab() {
-  const { isConnected: isEthereumConnected } = useAppKitAccount();
+  const { address: senderEthAddress, isConnected: isEthereumConnected } = useAppKitAccount();
   const { isConnected: isVaraConnected } = useVaraAccount();
+  const { ready: registryReady, stealthMetaAddressOf } = useRegistryService();
+  const { ready: announcerReady, announce } = useAnnouncerService();
   const alert = useAlert();
 
   const [recipientAddress, setRecipientAddress] = useState("");
   const [metaAddress, setMetaAddress] = useState("");
+  const [chain, setChain] = useState<Chain>("eth");
   const [lookupLoading, setLookupLoading] = useState(false);
   const [stealthResult, setStealthResult] = useState<{
     stealthAddress: string;
     ephemeralPublicKey: string;
     viewTag: string;
+    chain: Chain;
   } | null>(null);
   const [sendLoading, setSendLoading] = useState(false);
 
@@ -229,17 +236,31 @@ function SendTab() {
       alert.warning("Enter recipient address.");
       return;
     }
+    if (!registryReady) {
+      alert.warning("Registry service is not ready yet.");
+      return;
+    }
     setLookupLoading(true);
     try {
-      // TODO: query Vara Registry via sails-js
-      // For now, allow manual meta-address input
-      alert.info("Vara Registry lookup is not yet connected. Enter the meta-address manually.");
+      const result = await stealthMetaAddressOf(recipientAddress);
+      if (result) {
+        const addr = result.startsWith("0x") ? result : `0x${result}`;
+        setMetaAddress(addr);
+        alert.success("Stealth meta-address found!");
+      } else {
+        alert.warning("No stealth meta-address registered for this address.");
+      }
     } catch (e) {
       alert.error(e instanceof Error ? e.message : "Lookup failed");
     } finally {
       setLookupLoading(false);
     }
-  }, [recipientAddress, alert]);
+  }, [recipientAddress, registryReady, stealthMetaAddressOf, alert]);
+
+  // Reset result when chain changes — user must recompute manually
+  useEffect(() => {
+    setStealthResult(null);
+  }, [chain]);
 
   const handleComputeStealth = useCallback(() => {
     if (!metaAddress) {
@@ -247,17 +268,17 @@ function SendTab() {
       return;
     }
     try {
-      const result = generateStealthAddress(metaAddress);
+      const result = generateStealthAddress(metaAddress, chain);
       setStealthResult(result);
       alert.success("Stealth address computed!");
     } catch (e) {
       alert.error(e instanceof Error ? e.message : "Failed to compute stealth address");
     }
-  }, [metaAddress, alert]);
+  }, [metaAddress, chain, alert]);
 
   const handleSend = useCallback(async () => {
     if (!stealthResult) return;
-    if (!isEthereumConnected) {
+    if (!isEthereumConnected || !senderEthAddress) {
       alert.warning("Connect your Ethereum wallet to send.");
       return;
     }
@@ -265,17 +286,34 @@ function SendTab() {
       alert.warning("Connect your Vara wallet to announce.");
       return;
     }
+    if (!announcerReady) {
+      alert.warning("Announcer service is not ready yet.");
+      return;
+    }
     setSendLoading(true);
     try {
-      // TODO: 1. Announce on Vara via sails-js
-      // TODO: 2. Transfer ETH/tokens to stealthResult.stealthAddress via wagmi
-      alert.info("Send flow is not yet connected to contracts.");
+      const ephemeralBytes = Array.from(
+        Buffer.from(stealthResult.ephemeralPublicKey.replace(/^0x/, ""), "hex"),
+      );
+      const viewTagBytes = Array.from(
+        Buffer.from(stealthResult.viewTag.replace(/^0x/, ""), "hex"),
+      );
+
+      await announce({
+        stealth_address: stealthResult.stealthAddress,
+        caller: senderEthAddress,
+        ephemeral_pub_key: ephemeralBytes,
+        metadata: viewTagBytes,
+        chain: stealthResult.chain === "eth" ? "Ethereum" : "Vara",
+      });
+
+      alert.success("Announcement sent on Vara!");
     } catch (e) {
-      alert.error(e instanceof Error ? e.message : "Send failed");
+      alert.error(e instanceof Error ? e.message : "Announce failed");
     } finally {
       setSendLoading(false);
     }
-  }, [stealthResult, isEthereumConnected, isVaraConnected, alert]);
+  }, [stealthResult, isEthereumConnected, senderEthAddress, isVaraConnected, announcerReady, announce, alert]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -297,7 +335,7 @@ function SendTab() {
           variant="outlined"
           onClick={handleLookup}
           startIcon={lookupLoading ? <CircularProgress size={16} /> : <SearchIcon />}
-          disabled={lookupLoading}
+          disabled={lookupLoading || !registryReady}
         >
           Lookup
         </Button>
@@ -312,14 +350,52 @@ function SendTab() {
         helperText="Paste manually or use Lookup to fetch from Vara Registry"
       />
 
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Typography variant="body2" color="text.secondary">
+          Network:
+        </Typography>
+        <ToggleButtonGroup
+          value={chain}
+          exclusive
+          onChange={(_, v) => v && setChain(v as Chain)}
+          size="small"
+          sx={{
+            "& .MuiToggleButton-root": {
+              minWidth: 120,
+              textTransform: "none",
+              fontWeight: 600,
+              bgcolor: "action.hover",
+              border: "none",
+              color: "text.secondary",
+              transition: "all 0.25s ease",
+            },
+            "& .MuiToggleButton-root.Mui-selected[value='eth']": {
+              bgcolor: "#627eea !important",
+              color: "#fff !important",
+              borderColor: "#627eea !important",
+              "&:hover": { bgcolor: "#4f6bd6 !important" },
+            },
+            "& .MuiToggleButton-root.Mui-selected[value='vara']": {
+              bgcolor: "#9cef3b !important",
+              color: "#000 !important",
+              borderColor: "#9cef3b !important",
+              "&:hover": { bgcolor: "#8ad635 !important" },
+            },
+          }}
+        >
+          <ToggleButton value="eth">Ethereum</ToggleButton>
+          <ToggleButton value="vara">Vara</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
       <Button
         variant="outlined"
         onClick={handleComputeStealth}
-        startIcon={<VisibilityIcon />}
+        startIcon={stealthResult ? <AutorenewIcon /> : <VisibilityIcon />}
         disabled={!metaAddress}
         sx={{ borderColor: "#9cef3b", color: "#9cef3b", "&:hover": { borderColor: "#9cef3b", bgcolor: "rgba(156,239,59,0.08)" } }}
       >
-        Compute Stealth Address
+        {stealthResult ? "Recompute" : "Compute Stealth Address"}
       </Button>
 
       {stealthResult && (
@@ -348,7 +424,7 @@ function SendTab() {
               variant="outlined"
               onClick={handleSend}
               startIcon={sendLoading ? <CircularProgress size={16} /> : <SendIcon />}
-              disabled={sendLoading || !isEthereumConnected || !isVaraConnected}
+              disabled={sendLoading || !isEthereumConnected || !isVaraConnected || !announcerReady}
               sx={{ borderColor: "#9cef3b", color: "#9cef3b", "&:hover": { borderColor: "#9cef3b", bgcolor: "rgba(156,239,59,0.08)" } }}
             >
               Announce & Send
