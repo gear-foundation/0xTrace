@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
+import Link from "@mui/material/Link";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -14,6 +15,7 @@ import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useCallback, useState } from "react";
+import { checksumAddress, type Hex } from "viem";
 import {
   type Chain,
   checkStealthAddress,
@@ -255,7 +257,24 @@ export function ClaimTab() {
                     />
                   </TableCell>
                   <TableCell sx={{ fontFamily: "monospace", fontSize: 12 }}>
-                    {`${r.stealthAddress.slice(0, 10)}...${r.stealthAddress.slice(-8)}`}
+                    {r.chain === "eth" ? (
+                      <Link
+                        href={`https://hoodi.etherscan.io/address/${checksumAddress(r.stealthAddress as Hex)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          color: "primary.main",
+                          textDecoration: "underline",
+                          "&:hover": {
+                            textDecoration: "none",
+                          },
+                        }}
+                      >
+                        {checksumAddress(r.stealthAddress as Hex)}
+                      </Link>
+                    ) : (
+                      `${r.stealthAddress.slice(0, 10)}...${r.stealthAddress.slice(-8)}`
+                    )}
                   </TableCell>
                   <TableCell sx={{ fontFamily: "monospace", fontSize: 12 }}>{r.viewTag}</TableCell>
                   <TableCell align="right">

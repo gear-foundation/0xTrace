@@ -23,7 +23,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { useCallback, useEffect, useState } from "react";
-import { parseEther } from "viem";
+import { isAddress, parseEther } from "viem";
 import { useSendTransaction, useWaitForTransactionReceipt } from "wagmi";
 import { ETH_EXPLORER, VARA_DECIMALS, VARA_EXPLORER } from "@/constants";
 import { type Chain, generateStealthAddress } from "@/cryptography/StealthAddresses";
@@ -35,7 +35,7 @@ import { useVaraSigner } from "@/hooks/useVaraSigner";
 import { accentBtnSx, chainToggleSx } from "@/theme/styles";
 
 function isValidEthAddress(addr: string) {
-  return /^0x[0-9a-fA-F]{40}$/.test(addr);
+  return isAddress(addr, { strict: true });
 }
 
 function isValidAmount(val: string) {
@@ -276,7 +276,22 @@ export function SendTab() {
         <ToggleButtonGroup
           value={chain}
           exclusive
-          onChange={(_, v) => v && setChain(v as Chain)}
+          onChange={(_, v) => {
+            if (v) {
+              setChain(v as Chain);
+              if (metaAddress) {
+                try {
+                  const result = generateStealthAddress(metaAddress, v as Chain);
+                  setStealthResult(result);
+                  setTransferTxHash(null);
+                  setTransferDone(false);
+                  setAnnounceDone(false);
+                } catch (e) {
+                  alert.error(e instanceof Error ? e.message : "Failed to recompute stealth address");
+                }
+              }
+            }
+          }}
           size="small"
           sx={chainToggleSx}
         >

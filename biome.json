@@ -7,7 +7,7 @@
     }
   },
   "files": {
-    "includes": ["**", "!**/src/routeTree.gen.ts", "!**/target"]
+    "includes": ["**", "!**/src/routeTree.gen.ts", "!**/target", "!**/contracts"]
   },
   "formatter": {
     "enabled": true,
