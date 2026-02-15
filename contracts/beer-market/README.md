@@ -53,6 +53,10 @@ $ source .env
 $ forge script script/BeerMarket.s.sol:BeerMarketScript --rpc-url $MAINNET_RPC_URL --broadcast --verify -vvvv
 $ forge script script/BeerMarket.s.sol:BeerMarketScript --rpc-url $SEPOLIA_RPC_URL --broadcast --verify -vvvv
 $ forge script script/BeerMarket.s.sol:BeerMarketScript --rpc-url $HOODI_RPC_URL --broadcast --verify -vvvv
+
+$ forge script script/BuyBeer.s.sol:BuyBeerScript --rpc-url $MAINNET_RPC_URL --broadcast --verify -vvvv
+$ forge script script/BuyBeer.s.sol:BuyBeerScript --rpc-url $SEPOLIA_RPC_URL --broadcast --verify -vvvv
+$ forge script script/BuyBeer.s.sol:BuyBeerScript --rpc-url $HOODI_RPC_URL --broadcast --verify -vvvv
 ```
 
 ### Cast
