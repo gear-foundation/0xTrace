@@ -41,5 +41,6 @@ categories = ["cryptography::cryptocurrencies", "no-std", "wasm"]
 [workspace.dependencies]
 sails-rs = "0.10.2"
 tokio = "1.48.0"
+k256 = { version = "0.13.4", features = ["arithmetic"], default-features = false }
 registry-app = { version = "0.1.0", path = "app" }
 registry-client = { version = "0.1.0", path = "client" }

@@ -1,8 +1,21 @@
-### stealth-wallet-frontend
+### 0xTrace
 
-[![Build Status](https://github.com/StackOverflowExcept1on/stealth-wallet-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/StackOverflowExcept1on/stealth-wallet-frontend/actions/workflows/ci.yml)
+![Logo](./public/logo.png)
 
-Yet another ERC-5564 wallet
+[![Build Status](https://github.com/StackOverflowExcept1on/0xTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/StackOverflowExcept1on/stealth-wallet-frontend/actions/workflows/ci.yml)
+
+Yet another ERC-5564 (Stealth Addresses) wallet, but with storage on Vara Network
+
+### White paper
+
+[0xTrace White Paper](./public/stealth-addresses-article.pdf)
+
+### Smart contracts
+
+- **announcer**: [announcer](./contracts/announcer) is the program responsible for announcing stealth addresses on Vara
+  Network.
+- **registry**: [registry](./contracts/registry) is the program responsible for storing stealth addresses on Vara
+  Network.
 
 ### Installing
 

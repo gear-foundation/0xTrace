@@ -1,6 +1,10 @@
 #![no_std]
 
-use sails_rs::{cell::RefCell, collections::HashMap, prelude::*, H160};
+use k256::{
+    AffinePoint, EncodedPoint,
+    elliptic_curve::{group::prime::PrimeCurveAffine, sec1::FromEncodedPoint},
+};
+use sails_rs::{H160, cell::RefCell, collections::HashMap, hex, prelude::*};
 
 type StealthMetaAddress = String;
 
@@ -46,15 +50,41 @@ impl RegistryService<'_> {
         ethereum_address: H160,
         stealth_meta_address: StealthMetaAddress,
     ) {
-        let Some(stealth_meta_address_stripped) = stealth_meta_address.strip_prefix("0x") else {
-            panic!("Stealth meta address must be a 0x-prefixed hex string")
+        let mut buffer: [u8; 66] = [0; 66];
+        if hex::decode_to_slice(&stealth_meta_address, &mut buffer).is_err() {
+            panic!("Stealth meta address must be valid [u8; 66] array encoded as hex string");
         };
 
-        // Check that `stealth_without_0x` can be correctly encoded to `[u8; 66]`.
-        let mut buffer: [u8; 66] = [0; 66];
-        if sails_rs::hex::decode_to_slice(stealth_meta_address_stripped, &mut buffer).is_err() {
-            panic!("Stealth meta address must be a valid [u8; 66] array encoded as hex string");
+        let Some((spend_pub_key, view_pub_key)) = buffer.split_at_checked(33) else {
+            panic!("Stealth meta address must be exactly 66 bytes when decoded from hex");
         };
+
+        let spend_pub_key_buf_result: Result<[u8; 33], _> = spend_pub_key.try_into();
+        let spend_pub_key_buf =
+            spend_pub_key_buf_result.expect("spend_pub_key must be 33 bytes long");
+        let encoded_point = EncodedPoint::from_bytes(spend_pub_key_buf)
+            .expect("spend_pub_key is not valid encoded point");
+        match Option::<AffinePoint>::from(AffinePoint::from_encoded_point(&encoded_point)) {
+            Some(point) => {
+                if point.is_identity().into() {
+                    panic!("spend_pub_key cannot be identity point");
+                }
+            }
+            None => panic!("spend_pub_key is not valid point"),
+        }
+
+        let view_pub_key_buf_result: Result<[u8; 33], _> = view_pub_key.try_into();
+        let view_pub_key_buf = view_pub_key_buf_result.expect("view_pub_key must be 33 bytes long");
+        let encoded_point = EncodedPoint::from_bytes(view_pub_key_buf)
+            .expect("view_pub_key is not valid encoded point");
+        match Option::<AffinePoint>::from(AffinePoint::from_encoded_point(&encoded_point)) {
+            Some(point) => {
+                if point.is_identity().into() {
+                    panic!("view_pub_key cannot be identity point");
+                }
+            }
+            None => panic!("view_pub_key is not valid point"),
+        }
 
         // TODO: recover ethereum address from signature instead of accepting it as an argument
         self.data

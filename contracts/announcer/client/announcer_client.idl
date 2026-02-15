@@ -3,6 +3,12 @@ type Announcement = struct {
   caller: h160,
   ephemeral_pub_key: vec u8,
   metadata: vec u8,
+  chain: Chain,
+};
+
+type Chain = enum {
+  Ethereum,
+  Vara,
 };
 
 constructor {

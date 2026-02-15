@@ -94,38 +94,8 @@ export default function GetTokensPage() {
         Get Test Tokens
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        Get free test tokens to try transfers on testnets. These tokens have no real value.
+        Get free test tokens to try stealth transfers on testnets. These tokens have no real value.
       </Typography>
-
-      <Card variant="outlined">
-        <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <EthIcon />
-            <Typography variant="h6" fontWeight={600}>
-              Get Test ETH
-            </Typography>
-          </Box>
-          <Typography variant="body2" color="text.secondary">
-            Get some test ETH on Hoodi testnet to try stealth transfers.
-          </Typography>
-          <Box>
-            <Button
-              variant="outlined"
-              startIcon={<OpenInNewIcon />}
-              href="https://cloud.google.com/application/web3/faucet/ethereum/hoodi"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                borderColor: "divider",
-                color: "inherit",
-                "&:hover": { borderColor: "#627EEA", bgcolor: "rgba(98,126,234,0.08)" },
-              }}
-            >
-              hoodifaucet.io
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
 
       <Card variant="outlined">
         <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -136,7 +106,7 @@ export default function GetTokensPage() {
             </Typography>
           </Box>
           <Typography variant="body2" color="text.secondary">
-            Get free TVARA tokens on Vara testnet for transfer tests.
+            Get TVARA tokens on Vara Network testnet to pay for data storage fees.
             {!account && " Connect your Vara wallet first."}
           </Typography>
           <Box>
@@ -155,6 +125,36 @@ export default function GetTokensPage() {
             </Button>
           </Box>
           <HCaptcha ref={hCaptchaRef} sitekey={HCAPTCHA_SITEKEY} size="invisible" />
+        </CardContent>
+      </Card>
+
+      <Card variant="outlined">
+        <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <EthIcon />
+            <Typography variant="h6" fontWeight={600}>
+              Get Test ETH
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            Get ETH on Ethereum Hoodi testnet to try stealth transfers.
+          </Typography>
+          <Box>
+            <Button
+              variant="outlined"
+              startIcon={<OpenInNewIcon />}
+              href="https://cloud.google.com/application/web3/faucet/ethereum/hoodi"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                borderColor: "divider",
+                color: "inherit",
+                "&:hover": { borderColor: "#627EEA", bgcolor: "rgba(98,126,234,0.08)" },
+              }}
+            >
+              Ethereum Hoodi Faucet
+            </Button>
+          </Box>
         </CardContent>
       </Card>
     </Box>

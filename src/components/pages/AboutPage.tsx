@@ -114,8 +114,8 @@ export default function AboutPage() {
       </Typography>
 
       <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-        <Chip label="Ethereum (Hoodi Testnet)" variant="outlined" />
         <Chip label="Vara (Testnet)" variant="outlined" />
+        <Chip label="Ethereum (Hoodi Testnet)" variant="outlined" />
       </Box>
 
       <Divider />
@@ -133,7 +133,7 @@ export default function AboutPage() {
         <Button
           variant="outlined"
           startIcon={<GitHubIcon />}
-          href="https://github.com/gear-foundation/stealth-addresses"
+          href="https://github.com/StackOverflowExcept1on/0xTrace"
           target="_blank"
           rel="noopener noreferrer"
           sx={{

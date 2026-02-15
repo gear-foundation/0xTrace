@@ -21,10 +21,10 @@ async fn test_registry() {
     let mut registry_service_client = registry_program.registry();
 
     let ethereum_address = H160::random();
-    let stealth_meta_address = [0xff; 66];
+    let stealth_meta_address: String = "02ebd7344c3c7d58bc0b6eef2a22eabce7493745bcf691f60be774335b6f77a07002f76d32c934e0e767010cd6df08499b32259d828d84e7901447beab84313a1645".into();
 
-    let result = registry_service_client
-        .register_keys(ethereum_address, stealth_meta_address)
+    registry_service_client
+        .register_keys(ethereum_address, stealth_meta_address.clone())
         .await
         .unwrap();
 

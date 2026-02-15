@@ -9,11 +9,20 @@ use sails_rs::{H160, cell::RefCell, prelude::*};
 #[derive(Clone, Debug, PartialEq, Encode, Decode, TypeInfo)]
 #[codec(crate = scale_codec)]
 #[scale_info(crate = scale_info)]
+pub enum Chain {
+    Ethereum,
+    Vara,
+}
+
+#[derive(Clone, Debug, PartialEq, Encode, Decode, TypeInfo)]
+#[codec(crate = scale_codec)]
+#[scale_info(crate = scale_info)]
 pub struct Announcement {
     stealth_address: H160,
     caller: H160,
     ephemeral_pub_key: Vec<u8>,
     metadata: Vec<u8>,
+    chain: Chain,
 }
 
 impl Announcement {
