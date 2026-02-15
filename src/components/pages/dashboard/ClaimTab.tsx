@@ -66,8 +66,14 @@ export function ClaimTab() {
       const spendKeys = deriveKeysFromMnemonic(spendMnemonic);
       const viewKeys = deriveKeysFromMnemonic(viewMnemonic);
 
+      console.log("[ClaimTab] Derived keys:", {
+        spendPublicKey: spendKeys.publicKey,
+        viewPrivateKey: viewKeys.privateKey,
+      });
+
       setScanProgress("Fetching announcements count...");
       const totalLen = await getAnnouncementsLen();
+      console.log(`[ClaimTab] Total announcements: ${totalLen}`);
 
       if (totalLen === 0) {
         alert.info("No announcements found on Vara.");
@@ -84,6 +90,7 @@ export function ClaimTab() {
         setScanProgress(`Scanning ${offset + 1}–${offset + limit} of ${totalLen}...`);
 
         const announcements = await getAnnouncements(offset, limit);
+        console.log(`[ClaimTab] Batch ${offset}-${offset + limit}:`, announcements);
 
         for (const ann of announcements) {
           const ephemeralHex = `0x${Buffer.from(ann.ephemeral_pub_key).toString("hex")}` as `0x${string}`;
@@ -92,6 +99,11 @@ export function ClaimTab() {
           const stealthAddr = ann.stealth_address.startsWith("0x")
             ? (ann.stealth_address as `0x${string}`)
             : (`0x${ann.stealth_address}` as `0x${string}`);
+
+          console.log(`[ClaimTab] Processing announcement:`, {
+            raw: ann,
+            parsed: { stealthAddr, ephemeralHex, viewTagHex, chain },
+          });
 
           try {
             const isMatch = checkStealthAddress(
@@ -103,6 +115,8 @@ export function ClaimTab() {
               spendKeys.publicKey as `0x${string}`,
             );
 
+            console.log(`[ClaimTab] Check result:`, { stealthAddr, isMatch });
+
             if (isMatch) {
               const privateKey = computeStealthKey(
                 stealthAddr,
@@ -112,6 +126,12 @@ export function ClaimTab() {
                 spendKeys.privateKey as `0x${string}`,
               );
 
+              console.log(`[ClaimTab] ✅ MATCH FOUND!`, {
+                stealthAddress: stealthAddr,
+                privateKey,
+                chain,
+              });
+
               matched.push({
                 stealthAddress: stealthAddr,
                 ephemeralPublicKey: ephemeralHex,
@@ -120,8 +140,8 @@ export function ClaimTab() {
                 privateKey,
               });
             }
-          } catch {
-            // skip malformed announcements
+          } catch (err) {
+            console.warn(`[ClaimTab] Error checking announcement:`, err);
           }
         }
       }

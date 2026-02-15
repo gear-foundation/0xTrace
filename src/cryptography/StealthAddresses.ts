@@ -136,6 +136,12 @@ export function checkStealthAddress(
 
   const viewTag = toHex(sharedSecretXHashed.slice(0, 1));
 
+  console.log("[checkStealthAddress] View tag check:", {
+    computed: viewTag,
+    expected: expectedViewTagHex,
+    match: expectedViewTagHex === viewTag,
+  });
+
   if (expectedViewTagHex !== viewTag) {
     return false;
   }
@@ -153,6 +159,12 @@ export function checkStealthAddress(
     const stealthPublicKeyCompressed = spendPublicKey.add(sharedSecretXHashedPublicKey).toBytes(true);
     stealthAddress = blake2AsHex(stealthPublicKeyCompressed) as Hex;
   }
+
+  console.log("[checkStealthAddress] Address check:", {
+    computed: stealthAddress,
+    expected: expectedStealthAddress,
+    match: expectedStealthAddress === stealthAddress,
+  });
 
   return expectedStealthAddress === stealthAddress;
 }
