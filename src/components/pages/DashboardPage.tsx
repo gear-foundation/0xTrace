@@ -4,22 +4,27 @@ import SearchIcon from "@mui/icons-material/Search";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
-import { type SyntheticEvent, useState } from "react";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ClaimTab } from "./dashboard/ClaimTab";
 import { ReceiveTab } from "./dashboard/ReceiveTab";
 import { SendTab } from "./dashboard/SendTab";
 
-export default function DashboardPage() {
-  const [tab, setTab] = useState(0);
+const TAB_KEYS = ["receive", "send", "claim"] as const;
 
-  const handleTabChange = (_: SyntheticEvent, newValue: number) => {
-    setTab(newValue);
+export default function DashboardPage() {
+  const { tab } = useSearch({ from: "/_layout/" });
+  const navigate = useNavigate({ from: "/" });
+
+  const tabIndex = Math.max(0, TAB_KEYS.indexOf(tab ?? "receive"));
+
+  const handleTabChange = (_: unknown, newValue: number) => {
+    navigate({ search: { tab: TAB_KEYS[newValue] }, replace: true });
   };
 
   return (
     <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
       <Tabs
-        value={tab}
+        value={tabIndex}
         onChange={handleTabChange}
         variant="fullWidth"
         TabIndicatorProps={{ sx: { bgcolor: "#9cef3b" } }}
@@ -31,9 +36,9 @@ export default function DashboardPage() {
       </Tabs>
 
       <Box sx={{ pt: 1 }}>
-        {tab === 0 && <ReceiveTab />}
-        {tab === 1 && <SendTab />}
-        {tab === 2 && <ClaimTab />}
+        {tabIndex === 0 && <ReceiveTab />}
+        {tabIndex === 1 && <SendTab />}
+        {tabIndex === 2 && <ClaimTab />}
       </Box>
     </Box>
   );
