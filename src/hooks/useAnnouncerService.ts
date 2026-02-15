@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Signer } from "@polkadot/api/types";
 import type { Sails } from "sails-js";
 import { getAnnouncerSails } from "@/vara/connection";
 import { useVaraAccount } from "./useVaraAccount";
+import { useVaraSigner } from "./useVaraSigner";
 
 export type Announcement = {
   stealth_address: string;
@@ -14,6 +14,7 @@ export type Announcement = {
 
 export function useAnnouncerService() {
   const { account } = useVaraAccount();
+  const { getSigner } = useVaraSigner();
   const sailsRef = useRef<Sails | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,19 +46,11 @@ export function useAnnouncerService() {
         throw new Error("Announcer service not ready or wallet not connected");
       }
 
-      const injected = (window as unknown as Record<string, unknown>).injectedWeb3 as Record<
-        string,
-        { enable: (origin: string) => Promise<{ signer: unknown }> }
-      >;
-      const provider = injected[account.source];
-      if (!provider) throw new Error("Wallet extension not found");
-
-      const extension = await provider.enable("Stealth Wallet");
-
+      const signer = await getSigner();
       const sails = sailsRef.current;
       console.log("[Announcer] announce args:", announcement);
       const tx = sails.services.Announcer.functions.Announce(announcement);
-      tx.withAccount(account.address, { signer: (extension as { signer: Signer }).signer });
+      tx.withAccount(account.address, { signer });
       await tx.calculateGas();
       const result = await tx.signAndSend();
       return result;

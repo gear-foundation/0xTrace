@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Signer } from "@polkadot/api/types";
 import type { Sails } from "sails-js";
 import { getRegistrySails } from "@/vara/connection";
 import { useVaraAccount } from "./useVaraAccount";
+import { useVaraSigner } from "./useVaraSigner";
 
 export function useRegistryService() {
   const { account } = useVaraAccount();
+  const { getSigner } = useVaraSigner();
   const sailsRef = useRef<Sails | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,15 +38,7 @@ export function useRegistryService() {
         throw new Error("Registry service not ready or wallet not connected");
       }
 
-      const injected = (window as unknown as Record<string, unknown>).injectedWeb3 as Record<
-        string,
-        { enable: (origin: string) => Promise<{ signer: unknown }> }
-      >;
-      const provider = injected[account.source];
-      if (!provider) throw new Error("Wallet extension not found");
-
-      const extension = await provider.enable("Stealth Wallet");
-
+      const signer = await getSigner();
       const sails = sailsRef.current;
 
       // Strip 0x prefix — the contract adds it internally
@@ -56,7 +49,7 @@ export function useRegistryService() {
       console.log("[Registry] registerKeys:", { ethereumAddress, rawHex, len: rawHex.length });
 
       const tx = sails.services.Registry.functions.RegisterKeys(ethereumAddress, rawHex);
-      tx.withAccount(account.address, { signer: (extension as { signer: Signer }).signer });
+      tx.withAccount(account.address, { signer });
       await tx.calculateGas();
       const result = await tx.signAndSend();
       return result;
