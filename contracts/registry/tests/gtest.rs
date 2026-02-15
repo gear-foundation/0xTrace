@@ -1,5 +1,5 @@
 use registry_client::{RegistryClient, RegistryClientCtors, registry::*};
-use sails_rs::{H160, client::*, gtest::*};
+use sails_rs::{H160, client::*, gtest::*, hex};
 
 const ACTOR_ID: u64 = 42;
 
@@ -22,9 +22,10 @@ async fn test_registry() {
 
     let ethereum_address = H160::random();
     let stealth_meta_address = [0xff; 66];
+    let stealth_meta_address_hex = format!("0x{}", hex::encode(stealth_meta_address));
 
-    let result = registry_service_client
-        .register_keys(ethereum_address, stealth_meta_address)
+    registry_service_client
+        .register_keys(ethereum_address, stealth_meta_address_hex.clone())
         .await
         .unwrap();
 
@@ -32,5 +33,8 @@ async fn test_registry() {
         .stealth_meta_address_of(ethereum_address)
         .await
         .unwrap();
-    assert_eq!(retrieved_stealth_meta_address, Some(stealth_meta_address));
+    assert_eq!(
+        retrieved_stealth_meta_address,
+        Some(stealth_meta_address_hex)
+    );
 }

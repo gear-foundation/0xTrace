@@ -1,4 +1,4 @@
-use announcer_client::{Announcement, AnnouncerClient, AnnouncerClientCtors, announcer::*};
+use announcer_client::{Announcement, AnnouncerClient, AnnouncerClientCtors, Chain, announcer::*};
 use sails_rs::{H160, client::*, gtest::*, hex};
 
 const ACTOR_ID: u64 = 42;
@@ -28,6 +28,7 @@ async fn test_announcer() {
         )
         .unwrap(),
         metadata: vec![0],
+        chain: Chain::Ethereum,
     };
     announcer_service_client
         .announce(announcement1.clone())
@@ -48,6 +49,7 @@ async fn test_announcer() {
         )
         .unwrap(),
         metadata: vec![0],
+        chain: Chain::Ethereum,
     };
     announcer_service_client
         .announce(announcement2.clone())

@@ -106,4 +106,12 @@ pub struct Announcement {
     pub caller: H160,
     pub ephemeral_pub_key: Vec<u8>,
     pub metadata: Vec<u8>,
+    pub chain: Chain,
+}
+#[derive(PartialEq, Clone, Debug, Encode, Decode, TypeInfo)]
+#[codec(crate = sails_rs::scale_codec)]
+#[scale_info(crate = sails_rs::scale_info)]
+pub enum Chain {
+    Ethereum,
+    Vara,
 }
