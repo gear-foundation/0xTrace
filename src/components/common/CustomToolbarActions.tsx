@@ -74,7 +74,7 @@ function EthWalletButton({ compact = false }: { compact?: boolean }) {
       }}
     >
       {truncateAddress(address)}
-      {!compact && isBalanceLoading && <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />}
+      {!compact && isBalanceLoading && <CircularProgress size={10} sx={{ ml: 0.5, color: "text.secondary" }} />}
       {!compact && formattedBalance && (
         <Typography component="span" variant="caption" sx={{ ml: 0.5, mt: "2px", opacity: 0.7, lineHeight: 1 }}>
           {formattedBalance} {balanceData?.symbol}

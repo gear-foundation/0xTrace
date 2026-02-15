@@ -344,7 +344,7 @@ export default function VaraWalletButton({ compact = false }: { compact?: boolea
           }}
         >
           {account?.name || truncateAddress(account?.address ?? "")}
-          {!compact && !balance && <CircularProgress size={10} sx={{ ml: 0.5, color: "rgba(255,255,255,0.5)" }} />}
+          {!compact && !balance && <CircularProgress size={10} sx={{ ml: 0.5, color: "text.secondary" }} />}
           {!compact && balance && (
             <Typography component="span" variant="caption" sx={{ ml: 0.5, mt: "2px", opacity: 0.7, lineHeight: 1 }}>
               {balance} {tokenSymbol}
