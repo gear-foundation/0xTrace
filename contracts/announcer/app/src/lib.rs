@@ -4,7 +4,7 @@ use k256::{
     AffinePoint, EncodedPoint,
     elliptic_curve::{group::prime::PrimeCurveAffine, sec1::FromEncodedPoint},
 };
-use sails_rs::{H160, cell::RefCell, prelude::*};
+use sails_rs::{cell::RefCell, prelude::*};
 
 #[derive(Clone, Debug, PartialEq, Encode, Decode, TypeInfo)]
 #[codec(crate = scale_codec)]
@@ -18,8 +18,8 @@ pub enum Chain {
 #[codec(crate = scale_codec)]
 #[scale_info(crate = scale_info)]
 pub struct Announcement {
-    stealth_address: H160,
-    caller: H160,
+    stealth_address: ActorId,
+    caller: ActorId,
     ephemeral_pub_key: Vec<u8>,
     metadata: Vec<u8>,
     chain: Chain,

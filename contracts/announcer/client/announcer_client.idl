@@ -1,6 +1,6 @@
 type Announcement = struct {
-  stealth_address: h160,
-  caller: h160,
+  stealth_address: actor_id,
+  caller: actor_id,
   ephemeral_pub_key: vec u8,
   metadata: vec u8,
   chain: Chain,

@@ -102,8 +102,8 @@ pub mod announcer {
 #[codec(crate = sails_rs::scale_codec)]
 #[scale_info(crate = sails_rs::scale_info)]
 pub struct Announcement {
-    pub stealth_address: H160,
-    pub caller: H160,
+    pub stealth_address: ActorId,
+    pub caller: ActorId,
     pub ephemeral_pub_key: Vec<u8>,
     pub metadata: Vec<u8>,
     pub chain: Chain,

@@ -1,5 +1,5 @@
 use announcer_client::{Announcement, AnnouncerClient, AnnouncerClientCtors, Chain, announcer::*};
-use sails_rs::{H160, client::*, gtest::*, hex};
+use sails_rs::{client::*, gtest::*, hex, prelude::*};
 
 const ACTOR_ID: u64 = 42;
 
@@ -21,8 +21,8 @@ async fn test_announcer() {
     let mut announcer_service_client = announcer_program.announcer();
 
     let announcement1 = Announcement {
-        stealth_address: H160::random(),
-        caller: H160::random(),
+        stealth_address: ActorId::zero(),
+        caller: ActorId::zero(),
         ephemeral_pub_key: hex::decode(
             "031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
         )
@@ -42,8 +42,8 @@ async fn test_announcer() {
     assert_eq!(announcements[0], announcement1);
 
     let announcement2 = Announcement {
-        stealth_address: H160::random(),
-        caller: H160::random(),
+        stealth_address: ActorId::zero(),
+        caller: ActorId::zero(),
         ephemeral_pub_key: hex::decode(
             "031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
         )
