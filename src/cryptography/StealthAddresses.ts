@@ -1,6 +1,6 @@
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { blake2AsHex } from "@polkadot/util-crypto";
-import { bytesToBigInt, checksumAddress, fromHex, type Hex, keccak256, toBytes, toHex } from "viem";
+import { bytesToBigInt, checksumAddress, fromHex, type Hex, hexToBytes, keccak256, toBytes, toHex } from "viem";
 import { english, generateMnemonic, mnemonicToAccount, privateKeyToAddress } from "viem/accounts";
 
 export function generateMnemonicExtended() {
@@ -82,11 +82,11 @@ export function generateStealthAddress(stealthMetaAddress: string, chain: Chain)
   const spendPublicKeyHex = `0x${stealthMetaAddressHex.slice(0, 66)}`;
   const viewPublicKeyHex = `0x${stealthMetaAddressHex.slice(66)}`;
 
-  const spendPublicKeyBuffer = Buffer.from(spendPublicKeyHex.slice(2), "hex");
-  const viewPublicKeyBuffer = Buffer.from(viewPublicKeyHex.slice(2), "hex");
+  const spendPublicKeyBytes = hexToBytes(spendPublicKeyHex as Hex);
+  const viewPublicKeyBytes = hexToBytes(viewPublicKeyHex as Hex);
 
-  const spendPublicKey = secp256k1.Point.fromBytes(new Uint8Array(spendPublicKeyBuffer));
-  const viewPublicKey = secp256k1.Point.fromBytes(new Uint8Array(viewPublicKeyBuffer));
+  const spendPublicKey = secp256k1.Point.fromBytes(spendPublicKeyBytes);
+  const viewPublicKey = secp256k1.Point.fromBytes(viewPublicKeyBytes);
 
   const ephemeralPrivateKey = secp256k1.utils.randomPrivateKey();
   const ephemeralPublicKey = toHex(secp256k1.Point.fromPrivateKey(ephemeralPrivateKey).toBytes());
