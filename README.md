@@ -2,7 +2,7 @@
 
 ![Logo](./public/logo.gif)
 
-[![Build Status](https://github.com/StackOverflowExcept1on/0xTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/StackOverflowExcept1on/stealth-wallet-frontend/actions/workflows/ci.yml)
+[![Build Status](https://github.com/gear-foundation/0xTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/gear-foundation/stealth-wallet-frontend/actions/workflows/ci.yml)
 
 Yet another [ERC-5564 (Stealth Addresses)](https://eips.ethereum.org/EIPS/eip-5564) wallet, but with storage on Vara
 Network.
