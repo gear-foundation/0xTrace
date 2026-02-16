@@ -43,6 +43,8 @@ type ClaimResult = {
   privateKey: string;
 };
 
+const VARA_GENESIS = import.meta.env.VITE_VARA_GENESIS as string;
+
 export function ClaimTab() {
   const alert = useAlert();
   const { ready: announcerReady, getAnnouncements, getAnnouncementsLen } = useAnnouncerService();
@@ -238,6 +240,11 @@ export function ClaimTab() {
 
       const keyring = new Keyring({ type: "ecdsa", ss58Format: 137 });
       const pair = keyring.addFromSeed(fromHex(saveTarget.privateKey as Hex, { size: 32, to: "bytes" }));
+      pair.setMeta({
+        address: pair.address,
+        genesisHash: VARA_GENESIS as Hex,
+        name: `Vara Stealth ${saveTarget.stealthAddress.slice(0, 10)}...${saveTarget.stealthAddress.slice(-8)}`,
+      });
       const jsonPayload = JSON.stringify(pair.toJson(savePassword));
 
       const blob = new Blob([jsonPayload], { type: "application/json" });
