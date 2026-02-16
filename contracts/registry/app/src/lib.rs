@@ -86,7 +86,6 @@ impl RegistryService<'_> {
             None => panic!("view_pub_key is not valid point"),
         }
 
-        // TODO: recover ethereum address from signature instead of accepting it as an argument
         self.data
             .borrow_mut()
             .stealth_meta_addresses_map
