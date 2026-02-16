@@ -1,11 +1,17 @@
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import SearchIcon from "@mui/icons-material/Search";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
 import Link from "@mui/material/Link";
+import { useColorScheme } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -17,7 +23,7 @@ import Typography from "@mui/material/Typography";
 import { Keyring } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { useCallback, useState } from "react";
-import { checksumAddress, fromHex, type Hex, toHex } from "viem";
+import { checksumAddress, fromHex, type Hex } from "viem";
 import {
   type Chain,
   checkStealthAddress,
@@ -40,6 +46,9 @@ type ClaimResult = {
 export function ClaimTab() {
   const alert = useAlert();
   const { ready: announcerReady, getAnnouncements, getAnnouncementsLen } = useAnnouncerService();
+  const { mode, systemMode } = useColorScheme();
+  const resolvedMode = mode === "system" ? systemMode : mode;
+  const isDarkMode = resolvedMode === "dark";
 
   const [spendMnemonic, setSpendMnemonic] = useState("");
   const [viewMnemonic, setViewMnemonic] = useState("");
@@ -47,6 +56,11 @@ export function ClaimTab() {
   const [scanProgress, setScanProgress] = useState("");
   const [results, setResults] = useState<ClaimResult[]>([]);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [saveFilename, setSaveFilename] = useState("");
+  const [savePassword, setSavePassword] = useState("");
+  const [saveTarget, setSaveTarget] = useState<ClaimResult | null>(null);
+  const [savingJson, setSavingJson] = useState(false);
 
   const spendValidation = spendMnemonic ? validateMnemonic(spendMnemonic) : null;
   const viewValidation = viewMnemonic ? validateMnemonic(viewMnemonic) : null;
@@ -174,31 +188,6 @@ export function ClaimTab() {
 
   const handleCopyPrivateKey = useCallback(
     async (key: string) => {
-      await cryptoWaitReady();
-
-      // Execution Time1: 0.031005859375 ms
-      console.time("Execution Time1");
-      const keyring = new Keyring({ type: "ecdsa", ss58Format: 137 });
-      console.timeEnd("Execution Time1");
-
-      // Execution Time2: 250.827880859375 ms
-      // Execution Time2: 0.9951171875 ms (second time)
-      console.time("Execution Time2");
-      const pair = keyring.addFromSeed(fromHex(key as Hex, { size: 32, to: "bytes" }));
-      console.timeEnd("Execution Time2");
-
-      // Execution Time3: 6182.9580078125 ms
-      console.time("Execution Time3");
-      console.log(JSON.stringify(pair.toJson("1")));
-      console.timeEnd("Execution Time3");
-
-      // Execution Time4: 0.406005859375 ms
-      console.time("Execution Time4");
-      console.log(pair.address);
-      console.log(toHex(pair.addressRaw));
-      console.log(key);
-      console.timeEnd("Execution Time4");
-
       try {
         await navigator.clipboard.writeText(key);
         setCopiedKey(key);
@@ -210,6 +199,67 @@ export function ClaimTab() {
     },
     [alert],
   );
+
+  const handleOpenSaveDialog = useCallback((result: ClaimResult) => {
+    const shortAddr = `${result.stealthAddress.slice(0, 8)}${result.stealthAddress.slice(-4)}`;
+    setSaveFilename(`vara-stealth-${shortAddr}`);
+    setSavePassword("");
+    setSaveTarget(result);
+    setSaveDialogOpen(true);
+  }, []);
+
+  const handleCloseSaveDialog = useCallback(() => {
+    if (savingJson) {
+      return;
+    }
+    setSaveDialogOpen(false);
+    setSaveTarget(null);
+  }, [savingJson]);
+
+  const handleSaveJson = useCallback(async () => {
+    if (!saveTarget) {
+      return;
+    }
+
+    const trimmedName = saveFilename.trim();
+    if (!trimmedName) {
+      alert.warning("Enter a file name.");
+      return;
+    }
+    if (!savePassword) {
+      alert.warning("Enter a password to encrypt the file.");
+      return;
+    }
+
+    setSavingJson(true);
+    try {
+      await cryptoWaitReady();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const keyring = new Keyring({ type: "ecdsa", ss58Format: 137 });
+      const pair = keyring.addFromSeed(fromHex(saveTarget.privateKey as Hex, { size: 32, to: "bytes" }));
+      const jsonPayload = JSON.stringify(pair.toJson(savePassword));
+
+      const blob = new Blob([jsonPayload], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = trimmedName.endsWith(".json") ? trimmedName : `${trimmedName}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      alert.success("Vara key saved.");
+      setSaveDialogOpen(false);
+      setSaveTarget(null);
+    } catch (err) {
+      console.error("[ClaimTab] Failed to save json:", err);
+      alert.error(err instanceof Error ? err.message : "Failed to save file");
+    } finally {
+      setSavingJson(false);
+    }
+  }, [alert, saveFilename, savePassword, saveTarget]);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -306,15 +356,27 @@ export function ClaimTab() {
                   </TableCell>
                   <TableCell sx={{ fontFamily: "monospace", fontSize: 12 }}>{r.viewTag}</TableCell>
                   <TableCell align="right">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => handleCopyPrivateKey(r.privateKey)}
-                      startIcon={copiedKey === r.privateKey ? <CheckCircleIcon /> : <ContentCopyIcon />}
-                      sx={accentBtnSx}
-                    >
-                      {copiedKey === r.privateKey ? "Copied" : "Copy Key"}
-                    </Button>
+                    {r.chain === "eth" ? (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleCopyPrivateKey(r.privateKey)}
+                        startIcon={copiedKey === r.privateKey ? <CheckCircleIcon /> : <ContentCopyIcon />}
+                        sx={accentBtnSx}
+                      >
+                        {copiedKey === r.privateKey ? "Copied" : "Copy Key"}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleOpenSaveDialog(r)}
+                        startIcon={<SaveAltIcon />}
+                        sx={accentBtnSx}
+                      >
+                        Save Json
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -322,6 +384,87 @@ export function ClaimTab() {
           </Table>
         </TableContainer>
       )}
+
+      <Dialog
+        open={saveDialogOpen}
+        onClose={handleCloseSaveDialog}
+        maxWidth="sm"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: {
+              bgcolor: (theme) => (isDarkMode ? "#141820" : theme.palette.background.paper),
+              color: (theme) => theme.palette.text.primary,
+              backgroundImage: isDarkMode ? "linear-gradient(180deg, #1b2029 0%, #141820 100%)" : "none",
+              border: (_theme) => (isDarkMode ? "none" : "1px solid"),
+              borderColor: (theme) => (isDarkMode ? "transparent" : theme.palette.divider),
+              boxShadow: (theme) => (isDarkMode ? "0 24px 60px rgba(0,0,0,0.55)" : theme.shadows[8]),
+            },
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            borderBottom: isDarkMode ? "1px solid rgba(255,255,255,0.08)" : "none",
+            color: (theme) => (isDarkMode ? "rgba(255,255,255,0.82)" : theme.palette.text.primary),
+          }}
+        >
+          Save Vara Key
+        </DialogTitle>
+        <DialogContent
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            pt: 5,
+            pb: 0.5,
+            "& .MuiOutlinedInput-root": {
+              bgcolor: isDarkMode ? "rgba(255,255,255,0.04)" : "transparent",
+            },
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: (theme) => (isDarkMode ? "rgba(255,255,255,0.2)" : theme.palette.divider),
+            },
+            "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: (theme) => (isDarkMode ? "rgba(255,255,255,0.35)" : theme.palette.text.primary),
+            },
+            "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: (theme) => (isDarkMode ? "#00FFC4" : theme.palette.primary.main),
+            },
+          }}
+        >
+          <TextField
+            label="File name"
+            value={saveFilename}
+            onChange={(event) => setSaveFilename(event.target.value)}
+            size="small"
+            fullWidth
+            autoFocus
+            sx={{ mt: 1.5 }}
+          />
+          <TextField
+            label="Password"
+            type="password"
+            value={savePassword}
+            onChange={(event) => setSavePassword(event.target.value)}
+            size="small"
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions
+          sx={{
+            px: 3,
+            py: 1,
+            borderTop: isDarkMode ? "1px solid rgba(255,255,255,0.08)" : "none",
+          }}
+        >
+          <Button variant="text" onClick={handleCloseSaveDialog} disabled={savingJson}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleSaveJson} disabled={savingJson}>
+            {savingJson ? "Saving..." : "Save"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {results.length === 0 && !scanning && spendMnemonic && viewMnemonic && (
         <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", py: 2 }}>
