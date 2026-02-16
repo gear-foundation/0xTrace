@@ -61,7 +61,10 @@ function WalletListView({
           onClick={() => onSelectWallet(wallet)}
           sx={{
             borderRadius: 1,
-            "&:hover": { bgcolor: "rgba(255,255,255,0.08)" },
+            "&:hover": {
+              bgcolor: (theme) =>
+                theme.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : theme.palette.action.hover,
+            },
             "&.Mui-disabled": { opacity: 0.4 },
           }}
         >
@@ -71,7 +74,12 @@ function WalletListView({
                 width: 28,
                 height: 28,
                 borderRadius: "50%",
-                bgcolor: wallet.isInstalled ? "#00FFC4" : "rgba(255,255,255,0.15)",
+                bgcolor: (theme) =>
+                  wallet.isInstalled
+                    ? "#00FFC4"
+                    : theme.palette.mode === "dark"
+                      ? "rgba(255,255,255,0.15)"
+                      : theme.palette.action.disabledBackground,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -93,9 +101,16 @@ function WalletListView({
                 : "Not installed"
             }
             slotProps={{
-              primary: { sx: { color: "#fff" } },
+              primary: { sx: { color: (theme) => theme.palette.text.primary } },
               secondary: {
-                sx: { color: wallet.isConnected ? "#00FFC4" : "rgba(255,255,255,0.5)" },
+                sx: {
+                  color: (theme) =>
+                    wallet.isConnected
+                      ? "#00FFC4"
+                      : theme.palette.mode === "dark"
+                        ? "rgba(255,255,255,0.5)"
+                        : theme.palette.text.secondary,
+                },
               },
             }}
           />
@@ -122,15 +137,15 @@ function AccountListView({
   return (
     <>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-        <IconButton size="small" onClick={onBack} sx={{ color: "rgba(255,255,255,0.7)" }}>
+        <IconButton size="small" onClick={onBack} sx={{ color: (theme) => theme.palette.text.secondary }}>
           <ArrowBackIcon fontSize="small" />
         </IconButton>
-        <Typography variant="subtitle2" sx={{ color: "#fff" }}>
+        <Typography variant="subtitle2" sx={{ color: (theme) => theme.palette.text.primary }}>
           {wallet.name}
         </Typography>
       </Box>
       {wallet.accounts.length === 0 ? (
-        <Typography variant="body2" sx={{ py: 2, textAlign: "center", color: "rgba(255,255,255,0.5)" }}>
+        <Typography variant="body2" sx={{ py: 2, textAlign: "center", color: (theme) => theme.palette.text.secondary }}>
           No accounts found in {wallet.name}. Create one in the extension.
         </Typography>
       ) : (
@@ -143,25 +158,38 @@ function AccountListView({
               sx={{
                 borderRadius: 1,
                 pr: 1,
-                "&:hover": { bgcolor: "rgba(255,255,255,0.08)" },
-                "&.Mui-selected": { bgcolor: "rgba(0,255,196,0.12)" },
-                "&.Mui-selected:hover": { bgcolor: "rgba(0,255,196,0.18)" },
+                "&:hover": {
+                  bgcolor: (theme) =>
+                    theme.palette.mode === "dark" ? "rgba(255,255,255,0.08)" : theme.palette.action.hover,
+                },
+                "&.Mui-selected": {
+                  bgcolor: (theme) =>
+                    theme.palette.mode === "dark" ? "rgba(0,255,196,0.12)" : theme.palette.action.selected,
+                },
+                "&.Mui-selected:hover": {
+                  bgcolor: (theme) =>
+                    theme.palette.mode === "dark" ? "rgba(0,255,196,0.18)" : theme.palette.action.selected,
+                },
               }}
             >
               <ListItemText
                 primary={acc.name || truncateAddress(acc.address)}
                 secondary={truncateAddress(acc.address, 8)}
                 slotProps={{
-                  primary: { noWrap: true, sx: { color: "#fff" } },
+                  primary: { noWrap: true, sx: { color: (theme) => theme.palette.text.primary } },
                   secondary: {
                     noWrap: true,
-                    sx: { fontFamily: "monospace", fontSize: 12, color: "rgba(255,255,255,0.5)" },
+                    sx: {
+                      fontFamily: "monospace",
+                      fontSize: 12,
+                      color: (theme) => theme.palette.text.secondary,
+                    },
                   },
                 }}
               />
               <IconButton
                 size="small"
-                sx={{ color: "rgba(255,255,255,0.7)" }}
+                sx={{ color: (theme) => theme.palette.text.secondary }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onCopyAddress(acc.address);
@@ -202,7 +230,7 @@ function ConnectedView({
           alignItems: "center",
           gap: 1.5,
           p: 1.5,
-          bgcolor: "rgba(255,255,255,0.06)",
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(255,255,255,0.06)" : theme.palette.action.hover),
           borderRadius: 1,
         }}
       >
@@ -222,36 +250,43 @@ function ConnectedView({
           {account.name?.charAt(0) || "A"}
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="subtitle2" noWrap sx={{ color: "#fff" }}>
+          <Typography variant="subtitle2" noWrap sx={{ color: (theme) => theme.palette.text.primary }}>
             {account.name || "Account"}
           </Typography>
-          <Typography variant="caption" noWrap sx={{ fontFamily: "monospace", color: "rgba(255,255,255,0.5)" }}>
+          <Typography
+            variant="caption"
+            noWrap
+            sx={{ fontFamily: "monospace", color: (theme) => theme.palette.text.secondary }}
+          >
             {truncateAddress(account.address, 10)}
           </Typography>
         </Box>
-        <IconButton size="small" onClick={onCopyAddress} sx={{ color: "rgba(255,255,255,0.7)" }}>
+        <IconButton size="small" onClick={onCopyAddress} sx={{ color: (theme) => theme.palette.text.secondary }}>
           <ContentCopyIcon fontSize="small" />
         </IconButton>
       </Box>
       {balance && (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 0.5 }}>
           <VaraIcon />
-          <Typography variant="body2" sx={{ color: "#fff", fontWeight: 600, lineHeight: 1 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: (theme) => theme.palette.text.primary, fontWeight: 600, lineHeight: 1 }}
+          >
             {balance}
           </Typography>
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)", lineHeight: 1 }}>
+          <Typography variant="caption" sx={{ color: (theme) => theme.palette.text.secondary, lineHeight: 1 }}>
             {tokenSymbol}
           </Typography>
         </Box>
       )}
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.12)" }} />
+      <Divider sx={{ borderColor: (theme) => theme.palette.divider }} />
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Chip
           label={walletName}
           size="small"
           variant="outlined"
           onClick={onChangeWallet}
-          sx={{ color: "#fff", borderColor: "rgba(255,255,255,0.25)" }}
+          sx={{ color: (theme) => theme.palette.text.primary, borderColor: (theme) => theme.palette.divider }}
         />
         <Button size="small" color="error" startIcon={<LogoutIcon />} onClick={onDisconnect}>
           Disconnect
@@ -360,16 +395,28 @@ export default function VaraWalletButton({ compact = false }: { compact?: boolea
         slotProps={{
           paper: {
             sx: {
-              bgcolor: "rgb(32, 32, 32)",
-              color: "#fff",
-              backgroundImage: "none",
+              bgcolor: (theme) => (theme.palette.mode === "dark" ? "#141820" : theme.palette.background.paper),
+              color: (theme) => theme.palette.text.primary,
+              backgroundImage: (theme) =>
+                theme.palette.mode === "dark" ? "linear-gradient(180deg, #1b2029 0%, #141820 100%)" : "none",
+              border: (theme) => (theme.palette.mode === "dark" ? "none" : "1px solid"),
+              borderColor: (theme) => (theme.palette.mode === "dark" ? "transparent" : theme.palette.divider),
+              boxShadow: (theme) => (theme.palette.mode === "dark" ? "0 24px 60px rgba(0,0,0,0.55)" : theme.shadows[8]),
             },
           },
         }}
       >
-        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#fff" }}>
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            color: (theme) => theme.palette.text.primary,
+            borderBottom: (theme) => (theme.palette.mode === "dark" ? "1px solid rgba(255,255,255,0.08)" : "none"),
+          }}
+        >
           {dialogTitle}
-          <IconButton size="small" onClick={handleClose} sx={{ color: "rgba(255,255,255,0.7)" }}>
+          <IconButton size="small" onClick={handleClose} sx={{ color: (theme) => theme.palette.text.secondary }}>
             <CloseIcon fontSize="small" />
           </IconButton>
         </DialogTitle>
