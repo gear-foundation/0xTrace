@@ -15,6 +15,7 @@ import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { Keyring } from "@polkadot/api";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { useCallback, useState } from "react";
 import { checksumAddress, fromHex, type Hex, toHex } from "viem";
 import {
@@ -173,13 +174,31 @@ export function ClaimTab() {
 
   const handleCopyPrivateKey = useCallback(
     async (key: string) => {
+      await cryptoWaitReady();
+
+      // Execution Time1: 0.031005859375 ms
+      console.time("Execution Time1");
       const keyring = new Keyring({ type: "ecdsa", ss58Format: 137 });
+      console.timeEnd("Execution Time1");
+
+      // Execution Time2: 250.827880859375 ms
+      // Execution Time2: 0.9951171875 ms (second time)
+      console.time("Execution Time2");
       const pair = keyring.addFromSeed(fromHex(key as Hex, { size: 32, to: "bytes" }));
+      console.timeEnd("Execution Time2");
+
+      // Execution Time3: 6182.9580078125 ms
+      console.time("Execution Time3");
       console.log(JSON.stringify(pair.toJson("1")));
+      console.timeEnd("Execution Time3");
+
+      // Execution Time4: 0.406005859375 ms
+      console.time("Execution Time4");
       console.log(pair.address);
       console.log(toHex(pair.addressRaw));
-
       console.log(key);
+      console.timeEnd("Execution Time4");
+
       try {
         await navigator.clipboard.writeText(key);
         setCopiedKey(key);
